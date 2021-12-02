@@ -1,0 +1,58 @@
+Kulcsszavak: játékos keresés, játék keresés, játéklobbi
+
+Funkciók:
+	regisztráció:
+		-profilkép/avatár választása
+		-felhasználó adatai megadása
+		-rövid bemutatkozás
+
+	játék létrehozása:
+		-privát vagy nyílvános játék (később is változtatható)
+		-barátok meghívása játékra
+		-(ismeretlen) játékos keresése:
+			-filterek értékelés alapján
+		-játékos meghívása a csapatba
+		->amennyiben a játék nyílvános: csatlakozási kérelem elfogadása/elutasítása
+		-csapattagok közötti kommunikáció (privát és csoport chat)
+		-csapattagok értékelése:
+			-pontosság
+			-"magaviselet"
+			-higgadtság
+			-sportszerűség
+			-saját értékelés hozzáadása
+
+	játék keresése:
+		-pl távolság alapján
+		-játék részleteinek megtekintése (időpont, helyszín, csapatban lévő játékosok)
+		-csatlakozás kérése
+		-barát hozzáadása
+
+	barátok:
+		-barátok közötti kommunikáció
+		-barát profiljának megtekintése
+
+	profil:
+		-adataim megtekintése
+		-profilkép/avatár cseréje/hozzáadása
+		-profil adatok modosítása
+		-értékeléseim megtekintése
+		- (általam adott értékelések megtekintése)
+		-statisztikáim (létrehozott/lejátszott játékok száma stb.)
+		-kijelentkezés
+		-felhasználó törlése
+
+
+Adatbázis:
+-
+-
+-
+-
+
+
+Hasonló alkalmazások:
+	-OpenTenis:
+		-Be lehet regiszrálni, mindenkinek van profilja, lehet beszélgetni más játékosokkal és 
+játék eredményeket megadni.
+	-GamerLink:
+		-Regisztráció, játékosok profilja, számítógépes-mobilos játék választása, létrehozható 
+lobbik, ahol tudnak beszélni egymással a felhasználók
