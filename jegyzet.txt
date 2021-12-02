@@ -42,12 +42,6 @@ Funkciók:
 		-felhasználó törlése
 
 
-Adatbázis:
--
--
--
--
-
 
 Hasonló alkalmazások:
 	-OpenTenis:
