@@ -1,0 +1,37 @@
+Tables:
+	-Players:
+		-Player ID
+		-Profil Picture
+		-Name
+		-Email
+		-Age
+		-Password
+		-Number of games played
+		-Introduction
+		-Overall Rating
+
+	-Friensd:
+		-Player 'A' ID
+		-Player 'B' ID
+
+	-Games:
+		-Game ID
+		-Number of players
+		-Players
+		-Location
+		-Time
+
+	-Ratings:
+		-Rating ID
+		-From Player ID
+		-To Player ID
+		-Punctuality
+		-Behavior
+		-Calmness
+		-Sportmanship
+		-Personal comment
+	
+	-Chat:
+		-From Player ID
+		-To Player/Game ID
+		-Message
