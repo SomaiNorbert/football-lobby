@@ -1,5 +1,8 @@
 Kulcsszavak: játékos keresés, játék keresés, játéklobbi
 
+Szerepkörök:
+	Játékos
+
 Funkciók:
 	regisztráció:
 		-profilkép/avatár választása
@@ -7,7 +10,7 @@ Funkciók:
 		-rövid bemutatkozás
 
 	játék létrehozása:
-		-privát vagy nyílvános játék (később is változtatható)
+		-privát vagy nyilvános játék (később is változtatható)
 		-barátok meghívása játékra
 		-(ismeretlen) játékos keresése:
 			-filterek értékelés alapján
