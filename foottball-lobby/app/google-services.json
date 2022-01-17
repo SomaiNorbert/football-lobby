@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "295505147721",
+    "project_id": "football-lobby",
+    "storage_bucket": "football-lobby.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:295505147721:android:9b9855381a84a050614c98",
+        "android_client_info": {
+          "package_name": "com.example.football_lobby"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "295505147721-vb1j06grh9ru3fbqlgprgh9jq9nm5v97.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.football_lobby",
+            "certificate_hash": "8447a262d59e6d1fa8d3adb701d93240e251daee"
+          }
+        },
+        {
+          "client_id": "295505147721-jbvlvsb7egn47j4l0nreto6g4uuirl6i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1FQIKiX_w9GyAmihNh-nqN3guUMiznws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "295505147721-jbvlvsb7egn47j4l0nreto6g4uuirl6i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

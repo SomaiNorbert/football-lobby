@@ -9,13 +9,29 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.example.football_lobby.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class StartFragment : Fragment() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = Firebase.auth
     }
+
+    override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        if(currentUser != null){
+            findNavController().navigate(R.id.action_startFragment_to_profileFragment)
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,12 +47,12 @@ class StartFragment : Fragment() {
         //view.findViewById<ImageView>(R.id.logoImg).setImageDrawable(Drawable.createFromPath("drawable://" + R.drawable.logo))
 
 
-        view.findViewById<View>(R.id.loginBtn).setOnClickListener(
-            Navigation.createNavigateOnClickListener(R.id.action_startFragment_to_loginFragment)
-        )
-        view.findViewById<View>(R.id.registerBtn).setOnClickListener(
-            Navigation.createNavigateOnClickListener(R.id.action_startFragment_to_registrationFragment)
-        )
+        view.findViewById<View>(R.id.loginBtn).setOnClickListener{
+            findNavController().navigate(R.id.action_startFragment_to_loginFragment)
+        }
+        view.findViewById<View>(R.id.registerBtn).setOnClickListener{
+            findNavController().navigate(R.id.action_startFragment_to_registrationFragment)
+        }
     }
 
 }
