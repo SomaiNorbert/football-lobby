@@ -5,25 +5,182 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#C8C8C8"
-    tools:context=".fragments.ProfileFragment" >
+    tools:context=".fragments.ProfileFragment">
 
-    <TextView
-        android:id="@+id/txt"
+    <Button
+        android:id="@+id/backBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
+        android:text="Back"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/profilePictureImageView"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="60dp"
+        android:background="#969696"
+        android:src="@drawable/profil_avatar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/logOutBtn"
+    <TextView
+        android:id="@+id/playerNameTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Log Out"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Player Name"
+        android:textSize="25sp"
+        app:layout_constraintBottom_toTopOf="@+id/playedGamesTxt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/profilePictureImageView"
+        app:layout_constraintTop_toTopOf="@+id/profilePictureImageView" />
+
+    <TextView
+        android:id="@+id/playedGamesTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Played games: 100"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/ratingTxt"
+        app:layout_constraintEnd_toEndOf="@+id/playerNameTxt"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/playerNameTxt"
+        app:layout_constraintTop_toBottomOf="@+id/playerNameTxt" />
+
+    <TextView
+        android:id="@+id/ratingTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rating: 10/10"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/profilePictureImageView"
+        app:layout_constraintEnd_toEndOf="@+id/playerNameTxt"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/playerNameTxt"
+        app:layout_constraintTop_toBottomOf="@+id/playedGamesTxt" />
+
+    <Button
+        android:id="@+id/aboutMeBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:backgroundTint="#969696"
+        android:text="About me"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/myRatingsBtn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profilePictureImageView" />
+
+    <Button
+        android:id="@+id/myRatingsBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="My ratings"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/aboutMeBtn"
+        app:layout_constraintEnd_toStartOf="@+id/givenRatingsBtn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/aboutMeBtn"
+        app:layout_constraintTop_toTopOf="@+id/aboutMeBtn" />
+
+    <Button
+        android:id="@+id/givenRatingsBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Given ratings"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/myRatingsBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/myRatingsBtn"
+        app:layout_constraintTop_toTopOf="@+id/myRatingsBtn" />
+
+    <TextView
+        android:id="@+id/emailTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="30dp"
+        android:text="TextView"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt" />
+        app:layout_constraintTop_toBottomOf="@+id/aboutMeBtn" />
+
+    <TextView
+        android:id="@+id/birthdayTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="30dp"
+        android:text="TextView"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/emailTxt"
+        app:layout_constraintStart_toStartOf="@+id/emailTxt"
+        app:layout_constraintTop_toBottomOf="@+id/emailTxt" />
+
+    <TextView
+        android:id="@+id/aboutMeTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="30dp"
+        android:text="TextView"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/birthdayTxt"
+        app:layout_constraintStart_toStartOf="@+id/birthdayTxt"
+        app:layout_constraintTop_toBottomOf="@+id/birthdayTxt" />
+
+    <Button
+        android:id="@+id/logOutBtn"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_weight="1"
+        android:text="Log Out"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/editProfileBtn"
+        app:layout_constraintEnd_toStartOf="@+id/deleteProfileBtn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/editProfileBtn"
+        app:layout_constraintTop_toTopOf="@+id/editProfileBtn" />
+
+    <Button
+        android:id="@+id/deleteProfileBtn"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_weight="1"
+        android:text="Delete Profile"
+        android:textColor="#FF0000"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/logOutBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/logOutBtn"
+        app:layout_constraintTop_toTopOf="@+id/logOutBtn" />
+
+    <Button
+        android:id="@+id/editProfileBtn"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="10dp"
+        android:layout_weight="1"
+        android:text="Edit Profile"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/logOutBtn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
