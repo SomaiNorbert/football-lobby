@@ -18,6 +18,7 @@ import com.google.firebase.ktx.Firebase
 class StartFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var logo: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,8 +45,7 @@ class StartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //view.findViewById<ImageView>(R.id.logoImg).setImageDrawable(Drawable.createFromPath("drawable://" + R.drawable.logo))
-
+        view.findViewById<ImageView>(R.id.logoImg).setImageResource(R.drawable.logo)
 
         view.findViewById<View>(R.id.loginBtn).setOnClickListener{
             findNavController().navigate(R.id.action_startFragment_to_loginFragment)

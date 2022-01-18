@@ -7,10 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.football_lobby.R
@@ -24,6 +21,7 @@ class LoginFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var email: EditText
     private lateinit var password: EditText
+    private lateinit var logo: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +41,9 @@ class LoginFragment : Fragment() {
 
         email = view.findViewById(R.id.emailEditText)
         password = view.findViewById(R.id.passwordEditText)
+        logo = view.findViewById(R.id.logoImg)
+
+        logo.setImageResource(R.drawable.logo)
 
         view.findViewById<Button>(R.id.loginButton).setOnClickListener{
             loginUser(email.text.toString(), password.text.toString())
