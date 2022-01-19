@@ -1,5 +1,6 @@
 package com.example.football_lobby.fragments
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
@@ -38,11 +39,15 @@ import android.provider.MediaStore
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.drawable.toDrawable
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
+import kotlin.collections.HashMap
 
 
 class RegistrationFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
     private lateinit var name: EditText
     private lateinit var email: EditText
     private lateinit var password: EditText
@@ -51,12 +56,16 @@ class RegistrationFragment : Fragment() {
     private lateinit var aboutMe: EditText
     private lateinit var profilePicture: ImageView
     private lateinit var validationErrorsTxt: TextView
+    private lateinit var registerButton: Button
+    private lateinit var goToLogInBtn: TextView
+    private lateinit var alreadyRegisterdTxt: TextView
     private val validationErrors: ArrayList<String> = ArrayList()
     private var sUri = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
+        db = Firebase.firestore
     }
 
     override fun onCreateView(
@@ -67,6 +76,7 @@ class RegistrationFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_registration, container, false)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -78,8 +88,34 @@ class RegistrationFragment : Fragment() {
         aboutMe = view.findViewById(R.id.aboutMeEdt)
         profilePicture = view.findViewById(R.id.profilePicture)
         validationErrorsTxt = view.findViewById(R.id.validationErrorsTxt)
+        registerButton = view.findViewById(R.id.registerButton)
+        goToLogInBtn = view.findViewById(R.id.goToLogInBtn)
+        alreadyRegisterdTxt = view.findViewById(R.id.alreadyRegisterdTxt)
 
-        profilePicture.setImageResource(R.drawable.profil_avatar)
+        var userDoc: QuerySnapshot? = null
+
+        val user = auth.currentUser
+
+        if(user != null){
+            password.hint = "New password"
+            passwordAgain.hint = "New password again"
+            registerButton.text = "Save changes"
+            goToLogInBtn.visibility = View.INVISIBLE
+            alreadyRegisterdTxt.visibility = View.INVISIBLE
+            db.collection("users").whereEqualTo("uid", user.uid).get()
+                .addOnSuccessListener { result ->
+                    userDoc = result
+                    val userData = result.documents[0]
+                    sUri = userData["profilePic"].toString()
+                    Glide.with(this).load(userData["profilePic"]).into(profilePicture)
+                    name.setText(userData["name"].toString())
+                    email.setText(userData["email"].toString())
+                    birthday.setText(userData["birthday"].toString())
+                    aboutMe.setText(userData["aboutMe"].toString())
+                }
+        }else{
+            profilePicture.setImageResource(R.drawable.profil_avatar)
+        }
 
         birthday.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
@@ -108,34 +144,58 @@ class RegistrationFragment : Fragment() {
             getContent.launch("image/*")
         }
 
-        view.findViewById<TextView>(R.id.goToLogInBtn).setOnClickListener {
+        goToLogInBtn.setOnClickListener {
             findNavController().navigate(R.id.action_registrationFragment_to_loginFragment)
         }
 
-        view.findViewById<Button>(R.id.registerButton).setOnClickListener {
+        registerButton.setOnClickListener {
             if (validateInput()) {
-                auth.createUserWithEmailAndPassword(email.text.toString(), password.text.toString())
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val db = Firebase.firestore
-                            val user = hashMapOf(
-                                "name" to name.text.toString(),
-                                "email" to email.text.toString(),
-                                "password" to password.text.toString(),
-                                "birthday" to birthday.text.toString(),
-                                "aboutMe" to aboutMe.text.toString(),
-                                "profilePic" to sUri,
-                                "numberOfGamesPlayed" to 0,
-                                "overallRating" to 0,
-                                "uid" to auth.uid
-                            )
-                            db.collection("users").add(user)
-                            findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
-                        } else {
-                            Toast.makeText(this.context, "Registration failed.", Toast.LENGTH_SHORT)
-                                .show()
+                if(user == null){
+                    auth.createUserWithEmailAndPassword(email.text.toString(), password.text.toString())
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val user = hashMapOf(
+                                    "name" to name.text.toString(),
+                                    "email" to email.text.toString(),
+                                    "password" to password.text.toString(),
+                                    "birthday" to birthday.text.toString(),
+                                    "aboutMe" to aboutMe.text.toString(),
+                                    "profilePic" to sUri,
+                                    "numberOfGamesPlayed" to 0,
+                                    "overallRating" to 0,
+                                    "uid" to auth.uid
+                                )
+                                db.collection("users").add(user)
+                                findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                            } else {
+                                Toast.makeText(this.context, "Registration failed.", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
                         }
+                }else{
+                    var userData:HashMap<String, Any>
+                    if(password.text.isEmpty()){
+                        userData = hashMapOf(
+                            "name" to name.text.toString(),
+                            "email" to email.text.toString(),
+                            "birthday" to birthday.text.toString(),
+                            "aboutMe" to aboutMe.text.toString(),
+                            "profilePic" to sUri,
+                        )
+                    }else{
+                        userData = hashMapOf(
+                            "name" to name.text.toString(),
+                            "email" to email.text.toString(),
+                            "password" to password.text.toString(),
+                            "birthday" to birthday.text.toString(),
+                            "aboutMe" to aboutMe.text.toString(),
+                            "profilePic" to sUri,
+                        )
                     }
+                    db.collection("users").document(userDoc!!.documents[0].id)
+                        .update(userData)
+                    findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                }
             } else {
                 printValidationError()
             }
@@ -198,6 +258,12 @@ class RegistrationFragment : Fragment() {
 
     private fun validatePassword(): Boolean {
         var valid = true
+        if(auth.currentUser != null){
+            if(password.text.isEmpty()){
+                return true
+            }
+        }
+
         if (password.text.length < 8) {
             validationErrors.add("Password must contain at least 8 characters!")
             valid = false
@@ -223,8 +289,6 @@ class RegistrationFragment : Fragment() {
 
     private fun validatePasswordAgain(): Boolean {
         if (password.text.toString() != passwordAgain.text.toString()) {
-            Log.d(TAG, "password:${password.text}")
-            Log.d(TAG, "password2:${passwordAgain.text}")
             validationErrors.add("The two passwords has to match!")
             return false
         }
@@ -243,6 +307,7 @@ class RegistrationFragment : Fragment() {
         if (aboutMe.text.isEmpty()) {
             validationErrors.add("About me can not be empty!")
             return false
-        } else return true
+        }
+        return true
     }
 }

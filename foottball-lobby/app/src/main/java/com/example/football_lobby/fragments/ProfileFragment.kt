@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
@@ -31,7 +32,9 @@ class ProfileFragment : Fragment() {
     private lateinit var email: TextView
     private lateinit var birthday: TextView
     private lateinit var aboutMe: TextView
-
+    private lateinit var aboutMeBtn: Button
+    private lateinit var myRatingsBtn: Button
+    private lateinit var givenRatings: Button
 
     val db = Firebase.firestore
 
@@ -63,6 +66,9 @@ class ProfileFragment : Fragment() {
             email = view.findViewById(R.id.emailTxt)
             birthday = view.findViewById(R.id.birthdayTxt)
             aboutMe = view.findViewById(R.id.aboutMeTxt)
+            aboutMeBtn = view.findViewById(R.id.aboutMeBtn)
+            myRatingsBtn = view.findViewById(R.id.myRatingsBtn)
+            givenRatings = view.findViewById(R.id.givenRatingsBtn)
 
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { result ->
@@ -80,6 +86,22 @@ class ProfileFragment : Fragment() {
                     aboutMe.text = userData["aboutMe"].toString()
             }
 
+            view.findViewById<Button>(R.id.backBtn).setOnClickListener {
+                TODO("NOT IMPLEMENTED YET!")
+            }
+
+            aboutMeBtn.setOnClickListener{
+
+            }
+
+            myRatingsBtn.setOnClickListener {
+
+            }
+
+            givenRatings.setOnClickListener {
+
+            }
+
             view.findViewById<Button>(R.id.logOutBtn).setOnClickListener {
                 auth.signOut()
                 navigateToStartScreen()
@@ -91,7 +113,7 @@ class ProfileFragment : Fragment() {
             }
 
             view.findViewById<Button>(R.id.editProfileBtn).setOnClickListener {
-                TODO("Not implemented yet!")
+                findNavController().navigate(R.id.action_profileFragment_to_registrationFragment)
             }
         }
     }
