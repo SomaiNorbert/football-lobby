@@ -37,6 +37,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.graphics.drawable.toDrawable
 
 
 class RegistrationFragment : Fragment() {
@@ -93,6 +94,7 @@ class RegistrationFragment : Fragment() {
                 }, year, month, day)
                 dpd.show()
                 birthday.clearFocus()
+                aboutMe.requestFocus()
             }
         }
 
@@ -156,13 +158,22 @@ class RegistrationFragment : Fragment() {
     }
 
     private fun validateInput(): Boolean {
-        var valid = validateName()
+        var valid = validateProfilePic()
+        valid = validateName() && valid
         valid = validateEmail() && valid
         valid = validatePassword() && valid
         valid = validatePasswordAgain() && valid
         valid = validateBirthday() && valid
         valid = validateAboutMe() && valid
         return valid
+    }
+
+    private fun validateProfilePic(): Boolean {
+        if(sUri == ""){
+            validationErrors.add("You must select a profile picture!")
+            return false
+        }
+        return true
     }
 
     private fun validateName(): Boolean {
