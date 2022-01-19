@@ -22,6 +22,7 @@ class LoginFragment : Fragment() {
     private lateinit var email: EditText
     private lateinit var password: EditText
     private lateinit var logo: ImageView
+    private lateinit var errorTxt: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,11 +43,13 @@ class LoginFragment : Fragment() {
         email = view.findViewById(R.id.emailEditText)
         password = view.findViewById(R.id.passwordEditText)
         logo = view.findViewById(R.id.logoImg)
+        errorTxt = view.findViewById(R.id.errorTxt)
 
         logo.setImageResource(R.drawable.logo)
 
         view.findViewById<Button>(R.id.loginButton).setOnClickListener{
-            loginUser(email.text.toString(), password.text.toString())
+            if(validateLogIn())
+                loginUser(email.text.toString(), password.text.toString())
         }
 
         view.findViewById<TextView>(R.id.goToForgotPasswordBtn).setOnClickListener{
@@ -58,24 +61,34 @@ class LoginFragment : Fragment() {
         }
     }
 
+    private fun validateLogIn() : Boolean{
+        var error = ""
+        if(email.text.isEmpty()){
+            error = "Email can not be Empty!\n"
+        }
+        if(password.text.isEmpty()){
+            error += "Password can not be empty!"
+        }
+        if(error == ""){
+            errorTxt.visibility = View.GONE
+            return true
+        }
+        errorTxt.text = error
+        errorTxt.visibility = View.VISIBLE
+        return false
+    }
+
     private fun loginUser(email: String, password: String){
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener{ task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    updateUI(user)
+                    findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
                 } else {
+                    errorTxt.text = "Email or password is incorrect!"
+                    errorTxt.visibility = View.VISIBLE
                     Toast.makeText(this.context, "Authentication failed.", Toast.LENGTH_SHORT).show()
-                    updateUI(null)
+
                 }
             }
     }
-
-    private fun updateUI(user: FirebaseUser?) {
-        if(user != null){
-            findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
-        }
-    }
-
-
 }
