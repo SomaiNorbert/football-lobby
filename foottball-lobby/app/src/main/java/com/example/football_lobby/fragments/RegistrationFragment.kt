@@ -39,6 +39,8 @@ import android.provider.MediaStore
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.drawable.toDrawable
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import kotlin.collections.HashMap
@@ -135,9 +137,10 @@ class RegistrationFragment : Fragment() {
         }
 
         val getContent = registerForActivityResult(ActivityResultContracts.GetContent(),) { uri: Uri? ->
-            Log.d(TAG, uri.toString())
-            sUri = uri.toString()
-            Glide.with(this).load(uri).into(profilePicture)
+            if(uri != null){
+                sUri = uri.toString()
+                Glide.with(this).load(uri).into(profilePicture)
+            }
         }
 
         view.findViewById<Button>(R.id.choosePictureBtn).setOnClickListener {
@@ -165,6 +168,12 @@ class RegistrationFragment : Fragment() {
                                     "overallRating" to 0,
                                     "uid" to auth.uid
                                 )
+                                auth.currentUser!!.sendEmailVerification()
+                                    .addOnCompleteListener { task2 ->
+                                        if (task2.isSuccessful) {
+                                            Log.d(TAG, "Email sent.")
+                                        }
+                                    }
                                 db.collection("users").add(user)
                                 findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
                             } else {
@@ -191,7 +200,17 @@ class RegistrationFragment : Fragment() {
                             "aboutMe" to aboutMe.text.toString(),
                             "profilePic" to sUri,
                         )
+                        user.updatePassword(password.text.toString()).addOnCompleteListener{
+                                task ->
+                            if (task.isSuccessful) {
+                                Log.d(TAG, "User password updated.")
+                            }
+                        }
                     }
+                    val credential = EmailAuthProvider.getCredential(user.email!!, userDoc!!.documents[0]["password"].toString())
+                    user.reauthenticate(credential).addOnCompleteListener {
+                            user.updateEmail(email.text.toString())
+                        }
                     db.collection("users").document(userDoc!!.documents[0].id)
                         .update(userData)
                     findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
