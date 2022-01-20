@@ -9,9 +9,8 @@
 
     <ImageView
         android:id="@+id/logoImg"
-        android:layout_width="350dp"
-        android:layout_height="350dp"
-        android:background="#969696"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         app:layout_constraintBottom_toTopOf="@+id/errorTxt"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
