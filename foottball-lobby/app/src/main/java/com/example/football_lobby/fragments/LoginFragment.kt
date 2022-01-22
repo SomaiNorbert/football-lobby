@@ -11,10 +11,22 @@ import android.widget.*
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.football_lobby.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.facebook.FacebookException
+
+import com.facebook.login.LoginResult
+
+import com.facebook.FacebookCallback
+
+import com.facebook.login.LoginManager
+import com.facebook.login.widget.LoginButton
+import com.google.firebase.FirebaseError
+import com.google.firebase.FirebaseError.ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL
+import com.google.firebase.auth.*
+
 
 class LoginFragment : Fragment() {
 
@@ -23,10 +35,29 @@ class LoginFragment : Fragment() {
     private lateinit var password: EditText
     private lateinit var logo: ImageView
     private lateinit var errorTxt: TextView
+    private lateinit var facebookLoginButton: LoginButton
+    private lateinit var callbackManager: CallbackManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
+
+        callbackManager = CallbackManager.Factory.create();
+
+//        LoginManager.getInstance().registerCallback(callbackManager,
+//            object : FacebookCallback<LoginResult?> {
+//                override fun onSuccess(result: LoginResult?) {
+//                    findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
+//                }
+//
+//                override fun onCancel() {
+//                    Log.d(TAG, "CANCELLED")
+//                }
+//
+//                override fun onError(error: FacebookException) {
+//                    Log.d(TAG, "error:$error")
+//                }
+//            })
     }
 
     override fun onCreateView(
@@ -44,6 +75,25 @@ class LoginFragment : Fragment() {
         password = view.findViewById(R.id.passwordEditText)
         logo = view.findViewById(R.id.logoImg)
         errorTxt = view.findViewById(R.id.errorTxt)
+        facebookLoginButton = view.findViewById(R.id.facebookLoginButton)
+
+        facebookLoginButton.setPermissions("email", "public_profile")
+        facebookLoginButton.fragment = this
+        facebookLoginButton.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(loginResult: LoginResult) {
+                Log.d(TAG, "facebook:onSuccess:$loginResult")
+                handleFacebookAccessToken(loginResult.accessToken)
+            }
+
+            override fun onCancel() {
+                Log.d(TAG, "facebook:onCancel")
+            }
+
+            override fun onError(error: FacebookException) {
+                Log.d(TAG, "facebook:onError", error)
+            }
+        })
+
 
         logo.setImageResource(R.drawable.logo)
 
@@ -88,6 +138,30 @@ class LoginFragment : Fragment() {
                     errorTxt.visibility = View.VISIBLE
                     Toast.makeText(this.context, "Authentication failed.", Toast.LENGTH_SHORT).show()
 
+                }
+            }
+    }
+
+    private fun handleFacebookAccessToken(token: AccessToken) {
+        Log.d(TAG, "handleFacebookAccessToken:$token")
+
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener{ task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "signInWithCredential:success")
+                    findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
+                } else {
+                    try{
+                        throw task.exception!!
+                    }catch (e: FirebaseAuthUserCollisionException){
+                        if(e.errorCode == "ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL" ){
+                            Toast.makeText(context, "Profile not linked to Facebook account!", Toast.LENGTH_LONG).show()
+                        }
+                    }catch(e:Exception) {
+                        Log.e(TAG, e.message!!);
+                    }
+                    auth.signOut()
                 }
             }
     }
