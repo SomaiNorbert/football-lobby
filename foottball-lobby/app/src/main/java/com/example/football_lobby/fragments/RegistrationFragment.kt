@@ -1,11 +1,8 @@
 package com.example.football_lobby.fragments
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
-import android.content.Context
-import android.opengl.Visibility
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -15,32 +12,19 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.os.bundleOf
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doAfterTextChanged
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import java.util.*
-import java.util.logging.Level.INFO
-import javax.xml.datatype.DatatypeConstants.MONTHS
 import kotlin.collections.ArrayList
-import androidx.core.app.ActivityCompat.startActivityForResult
 
-import android.content.Intent
 import android.net.Uri
-import android.provider.MediaStore
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.graphics.drawable.toDrawable
 import com.google.firebase.auth.EmailAuthProvider
-import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import kotlin.collections.HashMap
@@ -78,7 +62,7 @@ class RegistrationFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_registration, container, false)
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -116,7 +100,7 @@ class RegistrationFragment : Fragment() {
                     aboutMe.setText(userData["aboutMe"].toString())
                 }
         }else{
-            profilePicture.setImageResource(R.drawable.profil_avatar)
+            profilePicture.setImageResource(R.drawable.profile_avatar)
         }
 
         birthday.setOnFocusChangeListener { _, hasFocus ->
@@ -136,19 +120,28 @@ class RegistrationFragment : Fragment() {
             }
         }
 
-        val getContent = registerForActivityResult(ActivityResultContracts.GetContent(),) { uri: Uri? ->
+        val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if(uri != null){
                 sUri = uri.toString()
                 Glide.with(this).load(uri).into(profilePicture)
             }
         }
 
-        view.findViewById<Button>(R.id.choosePictureBtn).setOnClickListener {
+        view.findViewById<ImageView>(R.id.profilePicture).setOnClickListener{
             getContent.launch("image/*")
         }
 
         goToLogInBtn.setOnClickListener {
             findNavController().navigate(R.id.action_registrationFragment_to_loginFragment)
+        }
+
+        aboutMe.setOnTouchListener { view, event ->
+            view.performClick()
+            view.parent.requestDisallowInterceptTouchEvent(true)
+            if ((event.action and MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+                view.parent.requestDisallowInterceptTouchEvent(false)
+            }
+            return@setOnTouchListener false
         }
 
         registerButton.setOnClickListener {

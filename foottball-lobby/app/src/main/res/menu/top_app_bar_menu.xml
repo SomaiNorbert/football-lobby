@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/profileGroup">
+        <item
+            android:id="@+id/editProfileItem"
+            android:title="Edit Profile" />
+        <item
+            android:id="@+id/logOutItem"
+            android:title="Log out" />
+        <item
+            android:id="@+id/deleteProfileItem"
+            android:title="Delete Profile" />
+    </group>
+</menu>

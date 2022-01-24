@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -32,11 +33,8 @@ class ProfileFragment : Fragment() {
     private lateinit var email: TextView
     private lateinit var birthday: TextView
     private lateinit var aboutMe: TextView
-    private lateinit var aboutMeBtn: Button
-    private lateinit var myRatingsBtn: Button
-    private lateinit var givenRatings: Button
 
-    val db = Firebase.firestore
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,9 +64,6 @@ class ProfileFragment : Fragment() {
             email = view.findViewById(R.id.emailTxt)
             birthday = view.findViewById(R.id.birthdayTxt)
             aboutMe = view.findViewById(R.id.aboutMeTxt)
-            aboutMeBtn = view.findViewById(R.id.aboutMeBtn)
-            myRatingsBtn = view.findViewById(R.id.myRatingsBtn)
-            givenRatings = view.findViewById(R.id.givenRatingsBtn)
 
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { result ->
@@ -85,37 +80,22 @@ class ProfileFragment : Fragment() {
                     birthday.text = userData["birthday"].toString()
                     aboutMe.text = userData["aboutMe"].toString()
             }
-
-            view.findViewById<Button>(R.id.backBtn).setOnClickListener {
-                TODO("NOT IMPLEMENTED YET!")
-            }
-
-            aboutMeBtn.setOnClickListener{
-
-            }
-
-            myRatingsBtn.setOnClickListener {
-
-            }
-
-            givenRatings.setOnClickListener {
-
-            }
-
-            view.findViewById<Button>(R.id.logOutBtn).setOnClickListener {
-                auth.signOut()
-                navigateToStartScreen()
-            }
-
-            view.findViewById<Button>(R.id.deleteProfileBtn).setOnClickListener{
-                user.delete();
-                navigateToStartScreen()
-            }
-
-            view.findViewById<Button>(R.id.editProfileBtn).setOnClickListener {
-                findNavController().navigate(R.id.action_profileFragment_to_registrationFragment)
-            }
         }
+    }
+
+    fun signOut() {
+        auth.signOut()
+        navigateToStartScreen()
+    }
+
+    fun deleteUser(){
+        val user = auth.currentUser!!
+        user.delete();
+        navigateToStartScreen()
+    }
+
+    private fun editProfile(){
+        findNavController().navigate(R.id.action_profileFragment_to_registrationFragment)
     }
 
     private fun navigateToStartScreen(){

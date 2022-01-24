@@ -4,13 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#C8C8C8"
     tools:context=".fragments.StartFragment">
 
     <ImageView
         android:id="@+id/logoImg"
-        android:layout_width="400dp"
-        android:layout_height="400dp"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
         app:layout_constraintBottom_toTopOf="@+id/loginBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
