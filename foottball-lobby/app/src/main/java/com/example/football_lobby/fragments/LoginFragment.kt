@@ -82,7 +82,7 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener{ task ->
                 if (task.isSuccessful) {
-                    findNavController().navigate(R.id.action_loginFragment_to_profileFragment)
+                    findNavController().navigate(R.id.action_loginFragment_to_findLobbyFragment)
                 } else {
                     errorTxt.text = "Email or password is incorrect!"
                     errorTxt.visibility = View.VISIBLE

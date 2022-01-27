@@ -12,4 +12,9 @@
             android:id="@+id/deleteProfileItem"
             android:title="Delete Profile" />
     </group>
+    <group android:id="@+id/goToProfileGroup">
+        <item
+            android:id="@+id/profileItem"
+            android:title="Profile" />
+    </group>
 </menu>

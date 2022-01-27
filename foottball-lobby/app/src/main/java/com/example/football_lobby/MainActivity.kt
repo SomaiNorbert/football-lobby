@@ -1,8 +1,11 @@
 package com.example.football_lobby
 
 import android.content.ContentValues.TAG
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
@@ -56,8 +59,34 @@ class MainActivity : AppCompatActivity() {
                     showTopMenu(R.id.profileGroup)
                     showBottomNavigationProfile()
                 }
+                R.id.findLobbyFragment -> {
+                    hideTopNav()
+                    showTopMenu(R.id.goToProfileGroup)
+                    showBottomNavigationMain()
+                }
+                R.id.createLobbyFragment -> {
+                    hideTopNav()
+                    showTopMenu(R.id.goToProfileGroup)
+                    showBottomNavigationMain()
+                }
                 else -> {
                     showBottomNavigationMain()
+                }
+            }
+        }
+
+        bottomNavigationMain.setOnItemSelectedListener {
+            when(it.itemId){
+                R.id.findLobbyItem -> {
+                    navController.navigate(R.id.action_global_findLobbyFragment)
+                    true
+                }
+                R.id.createLobbyItem -> {
+                    navController.navigate(R.id.action_global_createLobbyFragment)
+                    true
+                }
+                else -> {
+                    false
                 }
             }
         }
@@ -66,7 +95,6 @@ class MainActivity : AppCompatActivity() {
             onBackPressed()
         }
         topAppBar.setOnMenuItemClickListener {
-            val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
             when(it.itemId)
             {
                 R.id.editProfileItem -> {
@@ -74,11 +102,19 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.deleteProfileItem -> {
+                    val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
                     fragment.deleteUser();
                     true
                 }
                 R.id.logOutItem -> {
+                    val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
                     fragment.signOut()
+                    true
+                }
+                R.id.profileItem -> {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        navController.navigate(R.id.action_global_profileFragment)
+                    }, 100)
                     true
                 }
                 else -> {false}
@@ -92,6 +128,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun hideTopMenu() {
         topAppBar.menu.setGroupVisible(R.id.profileGroup,false)
+        topAppBar.menu.setGroupVisible(R.id.goToProfileGroup,false)
     }
 
     private fun showTopNav() {

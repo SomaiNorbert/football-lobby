@@ -18,7 +18,6 @@ import com.google.firebase.ktx.Firebase
 class StartFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var logo: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +28,7 @@ class StartFragment : Fragment() {
         super.onStart()
         val currentUser = auth.currentUser
         if(currentUser != null){
-            findNavController().navigate(R.id.action_startFragment_to_profileFragment)
+            findNavController().navigate(R.id.action_startFragment_to_findLobbyFragment)
         }
     }
 

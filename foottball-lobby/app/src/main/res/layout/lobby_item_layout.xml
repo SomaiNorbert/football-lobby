@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/dateAndTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:text="Date &amp; Time:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/location" />
+
+        <TextView
+            android:id="@+id/lobbyName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:text="Lobby Name:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:text="Location:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lobbyName" />
+
+        <TextView
+            android:id="@+id/createdBy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:text="Created by:"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/numberOfPlayers" />
+
+        <TextView
+            android:id="@+id/numberOfPlayers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="Nr. of players:"
+            app:layout_constraintStart_toEndOf="@+id/timeTxt"
+            app:layout_constraintTop_toTopOf="@+id/dateTxt" />
+
+        <TextView
+            android:id="@+id/lobbyNameTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:text="Lobby Name"
+            app:layout_constraintStart_toEndOf="@+id/lobbyName"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/locationTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Location"
+            app:layout_constraintStart_toStartOf="@+id/lobbyNameTxt"
+            app:layout_constraintTop_toBottomOf="@+id/lobbyNameTxt" />
+
+        <TextView
+            android:id="@+id/dateTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="date"
+            app:layout_constraintStart_toStartOf="@+id/locationTxt"
+            app:layout_constraintTop_toBottomOf="@+id/locationTxt" />
+
+        <TextView
+            android:id="@+id/createdByTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Player Name"
+            app:layout_constraintStart_toStartOf="@+id/dateTxt"
+            app:layout_constraintTop_toBottomOf="@+id/dateTxt" />
+
+        <TextView
+            android:id="@+id/playersInLobbyTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="N"
+            app:layout_constraintStart_toEndOf="@+id/numberOfPlayers"
+            app:layout_constraintTop_toTopOf="@+id/numberOfPlayers" />
+
+        <TextView
+            android:id="@+id/textView15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="/"
+            app:layout_constraintStart_toEndOf="@+id/playersInLobbyTxt"
+            app:layout_constraintTop_toTopOf="@+id/playersInLobbyTxt" />
+
+        <TextView
+            android:id="@+id/maximumNumberOfPlayersTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="M"
+            app:layout_constraintStart_toEndOf="@+id/textView15"
+            app:layout_constraintTop_toTopOf="@+id/playersInLobbyTxt" />
+
+        <TextView
+            android:id="@+id/timeTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="time"
+            app:layout_constraintStart_toEndOf="@+id/dateTxt"
+            app:layout_constraintTop_toTopOf="@+id/dateTxt" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

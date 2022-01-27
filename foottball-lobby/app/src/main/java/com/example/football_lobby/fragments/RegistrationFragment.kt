@@ -24,6 +24,7 @@ import kotlin.collections.ArrayList
 
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
@@ -62,7 +63,7 @@ class RegistrationFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_registration, container, false)
     }
 
-    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility", "ResourceType")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -83,8 +84,8 @@ class RegistrationFragment : Fragment() {
         val user = auth.currentUser
 
         if(user != null){
-            password.hint = "New password"
-            passwordAgain.hint = "New password again"
+            view.findViewById<TextInputLayout>(R.id.rPasswordTextInputLayout).hint = "New password"
+            view.findViewById<TextInputLayout>(R.id.rPasswordAgainTextInputLayout).hint = "New password again"
             registerButton.text = "Save changes"
             goToLogInBtn.visibility = View.INVISIBLE
             alreadyRegisterdTxt.visibility = View.INVISIBLE
@@ -109,11 +110,13 @@ class RegistrationFragment : Fragment() {
                 val year = calendar.get(Calendar.YEAR)
                 val month = calendar.get(Calendar.MONTH)
                 val day = calendar.get(Calendar.DAY_OF_MONTH)
-                var dpd = DatePickerDialog(context!!, { _, mYear, mMonth, mDay ->
+                var dpd = DatePickerDialog(context!!,16973939, { _, mYear, mMonth, mDay ->
                     val mmMonth = mMonth + 1
                     val date = "$mDay/$mmMonth/$mYear"
                     birthday.setText(date)
                 }, year, month, day)
+                calendar.add(Calendar.YEAR, -5)
+                dpd.datePicker.maxDate = calendar.timeInMillis
                 dpd.show()
                 birthday.clearFocus()
                 aboutMe.requestFocus()
@@ -168,7 +171,7 @@ class RegistrationFragment : Fragment() {
                                         }
                                     }
                                 db.collection("users").add(user)
-                                findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                                findNavController().navigate(R.id.action_registrationFragment_to_findLobbyFragment)
                             } else {
                                 Toast.makeText(this.context, "Registration failed.", Toast.LENGTH_SHORT)
                                     .show()

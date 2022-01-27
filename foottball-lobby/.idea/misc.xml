@@ -10,12 +10,15 @@
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/drawable/textview_border.xml" value="0.25277777777777777" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/activity_splash.xml" value="0.2509057971014493" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_create_lobby.xml" value="0.2509057971014493" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_find_lobby.xml" value="0.4" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_forgot_password.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_login.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_profile.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_registration.xml" value="0.2639751552795031" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_start.xml" value="0.2515625" />
-        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_main_menu.xml" value="0.23020833333333332" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/lobby_item_layout.xml" value="0.42911153119092627" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_main_menu.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.265625" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_profile_menu.xml" value="0.265625" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/top_app_bar.xml" value="0.265625" />
