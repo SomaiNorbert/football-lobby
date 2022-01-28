@@ -1,5 +1,8 @@
 package com.example.football_lobby.fragments
 
+import android.annotation.SuppressLint
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +18,8 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CreateLobbyFragment : Fragment() {
 
@@ -43,6 +48,7 @@ class CreateLobbyFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_create_lobby, container, false)
     }
 
+    @SuppressLint("ResourceType")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -55,6 +61,40 @@ class CreateLobbyFragment : Fragment() {
         maximumNumberOfPlayers = view.findViewById(R.id.numberOfPlayersTextInputEditText)
         radioGroup = view.findViewById(R.id.radioGroup)
         validationErrorsTxt = view.findViewById(R.id.validationErrorsTxt)
+
+        date.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                val calendar = Calendar.getInstance()
+                val year = calendar.get(Calendar.YEAR)
+                val month = calendar.get(Calendar.MONTH)
+                val day = calendar.get(Calendar.DAY_OF_MONTH)
+                var dpd = DatePickerDialog(context!!,16973939, { _, mYear, mMonth, mDay ->
+                    val mmMonth = mMonth + 1
+                    val d = "$mDay/$mmMonth/$mYear"
+                    date.setText(d)
+                }, year, month, day)
+                dpd.datePicker.minDate = calendar.timeInMillis
+                dpd.setTitle("Choose Game Date")
+                dpd.show()
+                date.clearFocus()
+            }
+        }
+
+        time.setOnFocusChangeListener { view, hasFocus ->
+            if(hasFocus){
+                val calendar = Calendar.getInstance()
+                val hour = calendar.get(Calendar.HOUR)
+                val minute = calendar.get(Calendar.MINUTE)
+                var tpd = TimePickerDialog(context!!,16973939, { _, mHour, mMinute ->
+                    val t = "$mHour:$mMinute"
+                    time.setText(t)
+                }, hour, minute, true)
+                tpd.setTitle("Choose Game Time")
+                tpd.show()
+                time.clearFocus()
+            }
+        }
+
 
         radioGroup.setOnCheckedChangeListener { _, i ->
             public = (i == R.id.publicRB)

@@ -117,6 +117,7 @@ class RegistrationFragment : Fragment() {
                 }, year, month, day)
                 calendar.add(Calendar.YEAR, -5)
                 dpd.datePicker.maxDate = calendar.timeInMillis
+                dpd.setTitle("Choose Birthday!")
                 dpd.show()
                 birthday.clearFocus()
                 aboutMe.requestFocus()
