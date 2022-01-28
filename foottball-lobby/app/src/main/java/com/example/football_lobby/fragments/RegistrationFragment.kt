@@ -213,6 +213,7 @@ class RegistrationFragment : Fragment() {
                 }
             } else {
                 printValidationError()
+                view.findViewById<ScrollView>(R.id.scrollView).scrollTo(0,0)
             }
         }
     }
@@ -229,7 +230,6 @@ class RegistrationFragment : Fragment() {
         } else {
             validationErrorsTxt.visibility = View.GONE
         }
-
     }
 
     private fun validateInput(): Boolean {
