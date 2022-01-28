@@ -7,9 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.RadioGroup
+import android.widget.*
 import androidx.navigation.fragment.findNavController
 import com.example.football_lobby.R
 import com.google.firebase.auth.FirebaseAuth
@@ -28,6 +26,8 @@ class CreateLobbyFragment : Fragment() {
     private lateinit var time: EditText
     private lateinit var maximumNumberOfPlayers: EditText
     private lateinit var radioGroup: RadioGroup
+    private lateinit var validationErrorsTxt: TextView
+    private val validationErrors: ArrayList<String> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +54,7 @@ class CreateLobbyFragment : Fragment() {
         time = view.findViewById(R.id.timeTextInputEditText)
         maximumNumberOfPlayers = view.findViewById(R.id.numberOfPlayersTextInputEditText)
         radioGroup = view.findViewById(R.id.radioGroup)
+        validationErrorsTxt = view.findViewById(R.id.validationErrorsTxt)
 
         radioGroup.setOnCheckedChangeListener { _, i ->
             public = (i == R.id.publicRB)
@@ -81,38 +82,49 @@ class CreateLobbyFragment : Fragment() {
                     }
             }else{
                 showValidationError()
+                view.findViewById<ScrollView>(R.id.scrollView).scrollTo(0,0)
             }
         }
 
     }
 
     private fun showValidationError() {
-        Log.d(TAG, "ERROR")
+        var error = ""
+        for (item in validationErrors) {
+            error += item + "\n"
+        }
+        if (error != "") {
+            validationErrorsTxt.visibility = View.VISIBLE
+            validationErrorsTxt.text = error
+            validationErrors.clear()
+        } else {
+            validationErrorsTxt.visibility = View.GONE
+        }
     }
 
     private fun validateInput(): Boolean {
         var valid = true
         if(lobbyName.text.isEmpty()){
-
+            validationErrors.add("Lobby name can not be empty!")
             valid = false
         }
         if(location.text.isEmpty()){
-
+            validationErrors.add("Location can not be empty!")
             valid = false
         }
         if(date.text.isEmpty()){
-
+            validationErrors.add("You must choose a date!")
             valid = false
         }
         if(time.text.isEmpty()){
-
+            validationErrors.add("You must choose a time!")
             valid = false
         }
         if(maximumNumberOfPlayers.text.isEmpty()){
-
+            validationErrors.add("Number of players per team can not be empty!")
             valid = false
         }else if(maximumNumberOfPlayers.text.toString().toInt() < 1 || maximumNumberOfPlayers.text.toString().toInt() > 20){
-
+            validationErrors.add("Number of players per team has to be between 1 and 20!")
             valid = false
         }
         return valid
