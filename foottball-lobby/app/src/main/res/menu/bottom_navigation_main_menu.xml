@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/findLobbyItem"
+        android:icon="@drawable/ic_search_black_24dp"
+        android:title="Find Lobby" />
+    <item
+        android:id="@+id/createLobbyItem"
+        android:icon="@drawable/ic_baseline_library_add_24"
+        android:title="Create Lobby" />
+    <item
+        android:id="@+id/myLobbiesItem"
+        android:icon="@drawable/ic_baseline_library_books_24"
+        android:title="My Lobbies" />
+    <item
+        android:id="@+id/friendsItem"
+        android:icon="@drawable/ic_baseline_groups_24"
+        android:title="Friends" />
+</menu>

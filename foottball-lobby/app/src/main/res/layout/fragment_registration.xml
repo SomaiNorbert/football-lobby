@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#C8C8C8"
     tools:context=".fragments.RegistrationFragment">
 
 
@@ -17,142 +16,167 @@
             android:id="@+id/profilePicture"
             android:layout_width="130dp"
             android:layout_height="130dp"
-            android:background="#969696"
-            app:layout_constraintEnd_toStartOf="@+id/choosePictureBtn"
-            app:layout_constraintHorizontal_bias="0.5"
+            android:background="@drawable/textview_border"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/validationErrorsTxt"
-            tools:src="@tools:sample/avatars" />
+            tools:src="@drawable/profile_avatar" />
 
-        <Button
-            android:id="@+id/choosePictureBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Choose Picture"
-            app:layout_constraintBottom_toBottomOf="@+id/profilePicture"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/profilePicture"
-            app:layout_constraintTop_toTopOf="@+id/profilePicture" />
-
-        <EditText
-            android:id="@+id/nameEdt"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nameTextInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="35dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
             android:hint="Name"
-            android:inputType="textPersonName"
-            android:minHeight="48dp"
-            app:layout_constraintBottom_toTopOf="@+id/emailEdt"
+            app:layout_constraintBottom_toTopOf="@+id/rEmailTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profilePicture" />
+            app:layout_constraintTop_toBottomOf="@+id/profilePicture">
 
-        <EditText
-            android:id="@+id/emailEdt"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nameEdt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="textPersonName" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/rEmailTextInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="35dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
             android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:minHeight="48dp"
-            app:layout_constraintBottom_toTopOf="@+id/passwordEdt"
+            app:layout_constraintBottom_toTopOf="@+id/rPasswordTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/nameEdt" />
+            app:layout_constraintTop_toBottomOf="@+id/nameTextInputLayout">
 
-        <EditText
-            android:id="@+id/passwordEdt"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/emailEdt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="textEmailAddress" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/rPasswordTextInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="35dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
             android:hint="Password"
-            android:inputType="textPassword"
-            android:minHeight="48dp"
-            app:layout_constraintBottom_toTopOf="@+id/passwordAgainEdt"
+            app:layout_constraintBottom_toTopOf="@+id/rPasswordAgainTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/emailEdt" />
+            app:layout_constraintTop_toBottomOf="@+id/rEmailTextInputLayout">
 
-        <EditText
-            android:id="@+id/passwordAgainEdt"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordEdt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/rPasswordAgainTextInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="35dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
             android:hint="Password again"
-            android:inputType="textPassword"
-            android:minHeight="48dp"
-            android:nextFocusDown="@+id/aboutMeEdt"
-            app:layout_constraintBottom_toTopOf="@+id/birthdayEdt"
+            app:layout_constraintBottom_toTopOf="@+id/birthdayTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/passwordEdt" />
+            app:layout_constraintTop_toBottomOf="@+id/rPasswordTextInputLayout">
 
-        <EditText
-            android:id="@+id/birthdayEdt"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordAgainEdt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="textPassword"
+                android:nextFocusDown="@+id/aboutMeEdt" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/birthdayTextInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="35dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
-            android:hint="Birthday (yyyy-MM-dd)"
-            android:inputType="date"
-            android:minHeight="48dp"
-            app:layout_constraintBottom_toTopOf="@+id/aboutMeEdt"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
+            android:hint="Birthday"
+            app:layout_constraintBottom_toTopOf="@+id/aboutMeTextInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/passwordAgainEdt" />
+            app:layout_constraintTop_toBottomOf="@+id/rPasswordAgainTextInputLayout">
 
-        <EditText
-            android:id="@+id/aboutMeEdt"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/birthdayEdt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="date" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/aboutMeTextInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginStart="35dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="35dp"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
             android:hint="Few things about me"
-            android:inputType="textMultiLine|textPersonName"
-            android:minHeight="48dp"
             app:layout_constraintBottom_toTopOf="@+id/registerButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/birthdayEdt" />
+            app:layout_constraintTop_toBottomOf="@+id/birthdayTextInputLayout">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/aboutMeEdt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:lines="4"
+                android:overScrollMode="always"
+                android:scrollbarStyle="insideInset"
+                android:scrollbars="vertical" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/registerButton"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginStart="35dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="35dp"
             android:text="Register"
             app:layout_constraintBottom_toTopOf="@+id/alreadyRegisterdTxt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/aboutMeEdt"/>
+            app:layout_constraintTop_toBottomOf="@+id/aboutMeTextInputLayout" />
 
         <TextView
             android:id="@+id/alreadyRegisterdTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Already have an account?"
+            android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@+id/goToLogInBtn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/registerButton" />
@@ -163,6 +187,7 @@
             android:layout_height="wrap_content"
             android:text="Log in"
             android:textColor="#2196F3"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="@+id/alreadyRegisterdTxt"
             app:layout_constraintHorizontal_bias="0.528"
             app:layout_constraintStart_toStartOf="@+id/alreadyRegisterdTxt"
@@ -180,4 +205,4 @@
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+</ScrollView>

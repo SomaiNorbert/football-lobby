@@ -17,8 +17,8 @@
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
             app:destination="@id/forgotPasswordFragment" />
         <action
-            android:id="@+id/action_loginFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            android:id="@+id/action_loginFragment_to_findLobbyFragment"
+            app:destination="@id/findLobbyFragment" />
     </fragment>
     <fragment
         android:id="@+id/registrationFragment"
@@ -31,6 +31,9 @@
         <action
             android:id="@+id/action_registrationFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_registrationFragment_to_findLobbyFragment"
+            app:destination="@id/findLobbyFragment" />
     </fragment>
     <fragment
         android:id="@+id/forgotPasswordFragment"
@@ -65,7 +68,18 @@
             android:id="@+id/action_startFragment_to_registrationFragment"
             app:destination="@id/registrationFragment" />
         <action
-            android:id="@+id/action_startFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+            android:id="@+id/action_startFragment_to_findLobbyFragment"
+            app:destination="@id/findLobbyFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/findLobbyFragment"
+        android:name="com.example.football_lobby.fragments.FindLobbyFragment"
+        android:label="fragment_find_lobby"
+        tools:layout="@layout/fragment_find_lobby" />
+    <action android:id="@+id/action_global_profileFragment" app:destination="@id/profileFragment" />
+    <fragment
+        android:id="@+id/createLobbyFragment"
+        android:name="com.example.football_lobby.fragments.CreateLobbyFragment"
+        android:label="fragment_create_lobby"
+        tools:layout="@layout/fragment_create_lobby" /><action android:id="@+id/action_global_createLobbyFragment" app:destination="@id/createLobbyFragment"/><action android:id="@+id/action_global_findLobbyFragment" app:destination="@id/findLobbyFragment"/>
 </navigation>

@@ -4,62 +4,80 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#C8C8C8"
     tools:context=".fragments.LoginFragment">
 
     <ImageView
         android:id="@+id/logoImg"
-        android:layout_width="400dp"
-        android:layout_height="400dp"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
         app:layout_constraintBottom_toTopOf="@+id/errorTxt"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@tools:sample/avatars" />
 
-    <EditText
-        android:id="@+id/emailEditText"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/emailTextInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/passwordEditText"
+        app:layout_constraintBottom_toTopOf="@+id/passwordTextInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorTxt" />
+        app:layout_constraintTop_toBottomOf="@+id/errorTxt">
 
-    <EditText
-        android:id="@+id/passwordEditText"
-        android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/emailEditText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="textEmailAddress" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/passwordTextInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:hint="Password"
-        android:inputType="textPassword"
-        android:minHeight="48dp"
         app:layout_constraintBottom_toTopOf="@+id/loginButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/emailTextInputLayout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="textPassword" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <Button
         android:id="@+id/loginButton"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
         android:text="Login"
         app:layout_constraintBottom_toTopOf="@+id/textView5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/passwordTextInputLayout" />
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
         android:text="Forgot Password?"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/goToForgotPasswordBtn"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -70,6 +88,7 @@
         android:layout_marginBottom="10dp"
         android:text="Click Here!"
         android:textColor="#2196F3"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/textView2"
         app:layout_constraintStart_toStartOf="@+id/textView2" />
@@ -81,6 +100,7 @@
         android:layout_marginBottom="10dp"
         android:text="Register"
         android:textColor="#2196F3"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/textView5"
         app:layout_constraintStart_toStartOf="@+id/textView5" />
@@ -90,8 +110,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:text="New to Football Lobby?"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/goToRegisterBtn"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -100,8 +120,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#FF0000"
+        android:textSize="16sp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/emailEditText"
+        app:layout_constraintBottom_toTopOf="@+id/emailTextInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImg" />
