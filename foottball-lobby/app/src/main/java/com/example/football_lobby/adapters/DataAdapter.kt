@@ -26,7 +26,7 @@ class DataAdapter(
         holder.time.text = currentItem.time
         holder.creator.text = currentItem.creator
         holder.numberOfPlayersInLobby.text = currentItem.numberOfPlayersInLobby.toString()
-        holder.maximumNumberOfPlayers.text = currentItem.maximumNumberOfPlayers.toString()
+        holder.maximumNumberOfPlayers.text = (currentItem.maximumNumberOfPlayers*2).toString()
     }
 
     override fun getItemCount() = list.size

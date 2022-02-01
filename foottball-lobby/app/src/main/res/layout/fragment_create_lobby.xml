@@ -45,7 +45,9 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/lobbyNameTextInputEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:nextFocusDown="@+id/radioGroup"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -67,7 +69,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/locationTextInputEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:focusable="false"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -89,7 +92,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/dateTextInputEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:focusable="false"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,7 +107,7 @@
             android:layout_marginEnd="30dp"
             android:layout_marginBottom="20dp"
             android:hint="Time"
-            app:layout_constraintBottom_toTopOf="@+id/numberOfPlayersTextInputLayout"
+            app:layout_constraintBottom_toTopOf="@+id/NumberOfPlayersTxt"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/dateTextInputLayout">
@@ -111,31 +115,35 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/timeTextInputEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/numberOfPlayersTextInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="30dp"
-            android:layout_marginBottom="20dp"
-            android:hint="Number of players per team"
-            app:layout_constraintBottom_toTopOf="@+id/radioGroup"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/timeTextInputLayout">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/numberOfPlayersTextInputEditText"
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:focusable="false"/>
+
         </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/NumberOfPlayersTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="70dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:text="Number of players per team:"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+            app:layout_constraintEnd_toStartOf="@+id/numberOfPlayersSpinner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/timeTextInputLayout" />
+
+        <Spinner
+            android:id="@+id/numberOfPlayersSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="70dp"
+            android:minHeight="48dp"
+            app:layout_constraintBottom_toBottomOf="@+id/NumberOfPlayersTxt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/NumberOfPlayersTxt"
+            app:layout_constraintTop_toTopOf="@+id/NumberOfPlayersTxt" />
 
         <RadioGroup
             android:id="@+id/radioGroup"
@@ -147,7 +155,7 @@
             app:layout_constraintBottom_toTopOf="@+id/createBtn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/numberOfPlayersTextInputLayout">
+            app:layout_constraintTop_toBottomOf="@+id/NumberOfPlayersTxt">
 
             <RadioButton
                 android:id="@+id/publicRB"
@@ -155,13 +163,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:checked="true"
-                android:text="Public" />
+                android:text="Public"
+                android:textSize="16sp" />
 
             <RadioButton
                 android:id="@+id/privateRB"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Private" />
+                android:text="Private"
+                android:textSize="16sp" />
         </RadioGroup>
 
         <Button

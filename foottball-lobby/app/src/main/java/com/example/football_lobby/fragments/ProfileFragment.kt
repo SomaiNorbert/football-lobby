@@ -21,10 +21,13 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 
 class ProfileFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var storageRef: StorageReference
 
     private lateinit var profilePic: ImageView
     private lateinit var name: TextView
@@ -39,6 +42,8 @@ class ProfileFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
+        val storage = Firebase.storage
+        storageRef = storage.reference
     }
 
     override fun onCreateView(
@@ -69,6 +74,12 @@ class ProfileFragment : Fragment() {
                 .addOnSuccessListener { result ->
                     val userData = result.documents[0]
                     Glide.with(this).load(userData["profilePic"]).into(profilePic)
+                    if(profilePic.drawable == null){
+                        storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
+                                res ->
+                            Glide.with(this).load(res).into(profilePic)
+                        }
+                    }
                     name.text = userData["name"].toString()
                     playedGames.text = userData["numberOfGamesPlayed"].toString()
                     if(userData["overallRating"].toString() == "0"){
@@ -91,11 +102,8 @@ class ProfileFragment : Fragment() {
     fun deleteUser(){
         val user = auth.currentUser!!
         user.delete();
+        //DELETE from DBs
         navigateToStartScreen()
-    }
-
-    private fun editProfile(){
-        findNavController().navigate(R.id.action_profileFragment_to_registrationFragment)
     }
 
     private fun navigateToStartScreen(){

@@ -3,32 +3,32 @@ package com.example.football_lobby.fragments
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
+import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import java.util.*
-import kotlin.collections.ArrayList
-
-import android.net.Uri
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import kotlin.collections.HashMap
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
+import java.util.*
 
 
 class RegistrationFragment : Fragment() {
@@ -46,6 +46,7 @@ class RegistrationFragment : Fragment() {
     private lateinit var registerButton: Button
     private lateinit var goToLogInBtn: TextView
     private lateinit var alreadyRegisterdTxt: TextView
+    private lateinit var storageRef: StorageReference
     private val validationErrors: ArrayList<String> = ArrayList()
     private var sUri = ""
 
@@ -53,6 +54,8 @@ class RegistrationFragment : Fragment() {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
         db = Firebase.firestore
+        val storage = Firebase.storage
+        storageRef = storage.reference
     }
 
     override fun onCreateView(
@@ -95,6 +98,12 @@ class RegistrationFragment : Fragment() {
                     val userData = result.documents[0]
                     sUri = userData["profilePic"].toString()
                     Glide.with(this).load(userData["profilePic"]).into(profilePicture)
+                    if(profilePicture.drawable == null){
+                        storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
+                            res ->
+                            Glide.with(this).load(res).into(profilePicture)
+                        }
+                    }
                     name.setText(userData["name"].toString())
                     email.setText(userData["email"].toString())
                     birthday.setText(userData["birthday"].toString())
@@ -104,24 +113,20 @@ class RegistrationFragment : Fragment() {
             profilePicture.setImageResource(R.drawable.profile_avatar)
         }
 
-        birthday.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-                var dpd = DatePickerDialog(context!!,16973939, { _, mYear, mMonth, mDay ->
-                    val mmMonth = mMonth + 1
-                    val date = "$mDay/$mmMonth/$mYear"
-                    birthday.setText(date)
-                }, year, month, day)
-                calendar.add(Calendar.YEAR, -5)
-                dpd.datePicker.maxDate = calendar.timeInMillis
-                dpd.setTitle("Choose Birthday!")
-                dpd.show()
-                birthday.clearFocus()
-                aboutMe.requestFocus()
-            }
+        birthday.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            var dpd = DatePickerDialog(requireContext(), 16973939, { _, mYear, mMonth, mDay ->
+                val mmMonth = mMonth + 1
+                val date = "$mDay/$mmMonth/$mYear"
+                birthday.setText(date)
+            }, year, month, day)
+            calendar.add(Calendar.YEAR, -5)
+            dpd.datePicker.maxDate = calendar.timeInMillis
+            dpd.setTitle("Choose Birthday!")
+            dpd.show()
         }
 
         val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -172,6 +177,7 @@ class RegistrationFragment : Fragment() {
                                         }
                                     }
                                 db.collection("users").add(user)
+                                uploadPhoto(sUri)
                                 findNavController().navigate(R.id.action_registrationFragment_to_findLobbyFragment)
                             } else {
                                 Toast.makeText(this.context, "Registration failed.", Toast.LENGTH_SHORT)
@@ -179,7 +185,7 @@ class RegistrationFragment : Fragment() {
                             }
                         }
                 }else{
-                    var userData:HashMap<String, Any>
+                    val userData:HashMap<String, Any>
                     if(password.text.isEmpty()){
                         userData = hashMapOf(
                             "name" to name.text.toString(),
@@ -210,11 +216,25 @@ class RegistrationFragment : Fragment() {
                         }
                     db.collection("users").document(userDoc!!.documents[0].id)
                         .update(userData)
+                    uploadPhoto(sUri)
                     findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
                 }
             } else {
                 printValidationError()
                 view.findViewById<ScrollView>(R.id.scrollView).scrollTo(0,0)
+            }
+        }
+    }
+
+    private fun uploadPhoto(path:String){
+        val currentUser = auth.currentUser
+        val ref = storageRef.child("images/${currentUser!!.uid}")
+        ref.putFile(path.toUri()).addOnCompleteListener{
+            task ->
+            if(task.isSuccessful){
+                Log.d(TAG, "File uploaded successfully!")
+            }else{
+                Log.d(TAG, "File upload error!")
             }
         }
     }

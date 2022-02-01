@@ -1,7 +1,10 @@
 package com.example.football_lobby
 
+import android.Manifest
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -29,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.hide()
+
+        requestPermissions()
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
         bottomNavigationMain = findViewById(R.id.bottomNavigationViewMain)
@@ -155,5 +160,13 @@ class MainActivity : AppCompatActivity() {
     private fun hideBottomNavigationTotally() {
         bottomNavigationProfile.visibility = View.GONE
         bottomNavigationMain.visibility = View.GONE
+    }
+
+    private fun requestPermissions(){
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0);
+            return;
+        }
     }
 }
