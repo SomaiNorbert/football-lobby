@@ -136,14 +136,16 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                     .addOnSuccessListener { result ->
                         userName = result.documents[0]["name"].toString()
                         val lobby = hashMapOf(
+                            "uid" to UUID.randomUUID().toString(),
                             "name" to lobbyName.text.toString(),
                             "location" to location.text.toString(),
                             "date" to date.text.toString(),
                             "time" to time.text.toString(),
                             "createdBy" to userName,
                             "maximumNumberOfPlayers" to maximumNumberOfPlayers.selectedItem.toString().toInt(),
-                            "numberOfPlayersInLobby" to 0,
-                            "public" to public
+                            "numberOfPlayersInLobby" to 1,
+                            "public" to public,
+                            "players" to listOf(user.uid)
                         )
                         db.collection("lobbies").add(lobby)
                         findNavController().navigate(R.id.action_global_findLobbyFragment)
@@ -153,9 +155,7 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                 view.findViewById<ScrollView>(R.id.scrollView).scrollTo(0,0)
             }
         }
-
     }
-
 
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
