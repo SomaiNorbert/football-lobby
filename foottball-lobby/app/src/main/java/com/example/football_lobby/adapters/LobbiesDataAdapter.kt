@@ -2,12 +2,10 @@ package com.example.football_lobby.adapters
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,10 +22,10 @@ import com.google.android.gms.tasks.Tasks
 import java.util.*
 import kotlin.collections.ArrayList
 
-class DataAdapter(
+class LobbiesDataAdapter(
     private var list: ArrayList<Lobby>,
     private var listener: OnItemClickedListener
-    ) : RecyclerView.Adapter<DataAdapter.RecyclerViewHolder>(), Filterable{
+    ) : RecyclerView.Adapter<LobbiesDataAdapter.RecyclerViewHolder>(), Filterable{
 
     private val listFull = ArrayList<Lobby>()
     private var context: Context? = null
@@ -69,16 +67,17 @@ class DataAdapter(
         }
 
         override fun onClick(p0: View?) {
-            val position:Int =  adapterPosition;
+            val position:Int = adapterPosition;
             if(position != RecyclerView.NO_POSITION){
-                listener.onItemClick(position)
+                val uid:String = list[position].uid
+                listener.onItemClick(uid)
             }
         }
 
     }
 
     interface OnItemClickedListener{
-        fun onItemClick(position:Int)
+        fun onItemClick(uid:String)
     }
 
     fun setData(list:ArrayList<Lobby>){

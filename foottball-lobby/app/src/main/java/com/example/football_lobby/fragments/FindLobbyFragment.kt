@@ -1,8 +1,6 @@
 package com.example.football_lobby.fragments
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,29 +8,26 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.widget.doOnTextChanged
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.football_lobby.R
-import com.example.football_lobby.adapters.DataAdapter
+import com.example.football_lobby.adapters.LobbiesDataAdapter
 import com.example.football_lobby.models.Lobby
 import com.google.android.material.slider.Slider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.android.gms.tasks.Tasks
-import java.util.*
 import kotlin.collections.ArrayList
 
-class FindLobbyFragment : Fragment(), DataAdapter.OnItemClickedListener {
+class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
-    private lateinit var adapter: DataAdapter
+    private lateinit var adapterLobbies: LobbiesDataAdapter
     private lateinit var db: FirebaseFirestore
     private lateinit var foundLobbiesRecyclerView: RecyclerView
     private lateinit var findLobbyByName: EditText
     private lateinit var findLobbyByCreator: EditText
     private lateinit var distanceSlider: Slider
-    private var listFull = ArrayList<Lobby>()
-    private var listCurrent = ArrayList<Lobby>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +72,7 @@ class FindLobbyFragment : Fragment(), DataAdapter.OnItemClickedListener {
     }
 
     private fun filter() {
-        adapter.filter.filter(findLobbyByName.text.toString() + "/" +
+        adapterLobbies.filter.filter(findLobbyByName.text.toString() + "/" +
                 findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
     }
 
@@ -86,22 +81,26 @@ class FindLobbyFragment : Fragment(), DataAdapter.OnItemClickedListener {
         db.collection("lobbies").get().addOnSuccessListener {
             result ->
             for(lobby in result.documents){
-                list.add(Lobby(lobby["name"].toString(), lobby["location"].toString(), lobby["date"].toString(),
+                list.add(Lobby(lobby["uid"].toString(),lobby["name"].toString(), lobby["location"].toString(), lobby["date"].toString(),
                 lobby["time"].toString(), lobby["createdBy"].toString(), lobby["numberOfPlayersInLobby"].toString().toInt(),
                 lobby["maximumNumberOfPlayers"].toString().toInt(), lobby["public"] as Boolean))
             }
-            adapter.setData(list)
-            adapter.notifyDataSetChanged()
+            adapterLobbies.setData(list)
+            adapterLobbies.notifyDataSetChanged()
         }
     }
 
     private fun setupRecyclerView(){
-        adapter = DataAdapter(ArrayList<Lobby>(), this)
-        foundLobbiesRecyclerView.adapter = adapter
+        adapterLobbies = LobbiesDataAdapter(ArrayList<Lobby>(), this)
+        foundLobbiesRecyclerView.adapter = adapterLobbies
         foundLobbiesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         foundLobbiesRecyclerView.setHasFixedSize(true)
     }
 
-    override fun onItemClick(position: Int) {
+    override fun onItemClick(uid: String) {
+        val bundle = Bundle()
+        bundle.putString("lobbyUid", uid)
+        findNavController().navigate(R.id.action_global_lobbyDetailsFragment, bundle)
     }
+
 }

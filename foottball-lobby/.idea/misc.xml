@@ -13,11 +13,13 @@
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_create_lobby.xml" value="0.2509057971014493" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_find_lobby.xml" value="0.4" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_forgot_password.xml" value="0.264" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_lobby_details.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_login.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_profile.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_registration.xml" value="0.2639751552795031" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/fragment_start.xml" value="0.2515625" />
-        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/lobby_item_layout.xml" value="0.42911153119092627" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/lobby_item_layout.xml" value="0.264" />
+        <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/layout/players_in_lobby_item_layout.xml" value="0.38640429338103754" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_main_menu.xml" value="0.264" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.265625" />
         <entry key="..\:/Info/szakdolgozat/football-lobby/foottball-lobby/app/src/main/res/menu/bottom_navigation_profile_menu.xml" value="0.265625" />
