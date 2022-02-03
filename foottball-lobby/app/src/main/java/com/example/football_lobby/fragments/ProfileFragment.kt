@@ -17,6 +17,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
@@ -74,14 +75,19 @@ class ProfileFragment : Fragment() {
             birthday = view.findViewById(R.id.birthdayTxt)
             aboutMe = view.findViewById(R.id.aboutMeTxt)
 
-            db.collection("users").whereEqualTo("uid", user.uid).get()
+            var userUid:String? = arguments?.get("playerUid").toString()
+            if(userUid == null || userUid == "null"){
+                userUid = user.uid
+            }else{
+                val toolbar = requireActivity().findViewById<MaterialToolbar>(R.id.topAppToolbar)
+                toolbar.menu.setGroupVisible(R.id.profileGroup, userUid == user.uid)
+            }
+            db.collection("users").whereEqualTo("uid", userUid).get()
                 .addOnSuccessListener { result ->
                     val userData = result.documents[0]
-
-                    storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
+                    storageRef.child("images/${userUid}").downloadUrl.addOnSuccessListener {
                         Glide.with(requireContext()).load(it).into(profilePic)
                     }
-
                     name.text = userData["name"].toString()
                     playedGames.text = userData["numberOfGamesPlayed"].toString()
                     if(userData["overallRating"].toString() == "0"){

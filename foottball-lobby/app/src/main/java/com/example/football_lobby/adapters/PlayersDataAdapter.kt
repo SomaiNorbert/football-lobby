@@ -91,14 +91,15 @@ class PlayersDataAdapter(
         }
 
         override fun onClick(p0: View?) {
-            val position:Int =  adapterPosition;
+            val position:Int = adapterPosition;
             if(position != RecyclerView.NO_POSITION){
-                listener.onItemClick(position)
+                val uid:String = list[position].uid
+                listener.onItemClick(uid)
             }
         }
     }
 
     interface OnItemClickedListener{
-        fun onItemClick(position:Int)
+        fun onItemClick(uid: String)
     }
 }

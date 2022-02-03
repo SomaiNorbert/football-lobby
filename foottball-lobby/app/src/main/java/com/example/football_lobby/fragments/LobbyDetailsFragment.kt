@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -202,6 +203,9 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         playersInLobbyRV.setHasFixedSize(true)
     }
 
-    override fun onItemClick(position: Int) {
+    override fun onItemClick(uid: String) {
+        val bundle = Bundle()
+        bundle.putString("playerUid", uid)
+        findNavController().navigate(R.id.action_lobbyDetailsFragment_to_profileFragment, bundle)
     }
 }

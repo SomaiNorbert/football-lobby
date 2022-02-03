@@ -32,7 +32,6 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
     private lateinit var findLobbyByName: EditText
     private lateinit var findLobbyByCreator: EditText
     private lateinit var distanceSlider: Slider
-    private var clickedLobbyUid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,16 +115,8 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
     override fun onItemClick(uid: String) {
         val bundle = Bundle()
-        clickedLobbyUid = uid
         bundle.putString("lobbyUid", uid)
         findNavController().navigate(R.id.action_global_lobbyDetailsFragment, bundle)
-    }
-
-    fun isPlayerInClickedLobby(): Boolean{
-        val res = Tasks.await(db.collection("lobbies").whereEqualTo("uid", clickedLobbyUid).get())
-        if((res.documents[0]["players"] as List<String>).contains(auth.currentUser!!.uid))
-            return true
-        return false
     }
 
 }

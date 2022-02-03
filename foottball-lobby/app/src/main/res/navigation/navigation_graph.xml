@@ -91,6 +91,9 @@
             android:name="lobbyUid"
             app:argType="string"
             android:defaultValue=""/>
+        <action
+            android:id="@+id/action_lobbyDetailsFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
     </fragment>
     <action android:id="@+id/action_global_lobbyDetailsFragment" app:destination="@id/lobbyDetailsFragment" />
 </navigation>
