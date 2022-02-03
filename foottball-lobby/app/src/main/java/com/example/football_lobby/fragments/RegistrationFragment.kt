@@ -105,7 +105,6 @@ class RegistrationFragment : Fragment() {
                 .addOnSuccessListener { result ->
                     userDoc = result
                     val userData = result.documents[0]
-                    sUri = userData["profilePic"].toString()
                     storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
                         Glide.with(requireActivity().baseContext).load(it).into(profilePicture)
                     }
@@ -168,10 +167,8 @@ class RegistrationFragment : Fragment() {
                                 val user = hashMapOf(
                                     "name" to name.text.toString(),
                                     "email" to email.text.toString(),
-                                    "password" to password.text.toString(),
                                     "birthday" to birthday.text.toString(),
                                     "aboutMe" to aboutMe.text.toString(),
-                                    "profilePic" to sUri,
                                     "numberOfGamesPlayed" to 0,
                                     "overallRating" to 0,
                                     "uid" to auth.uid
@@ -191,24 +188,7 @@ class RegistrationFragment : Fragment() {
                             }
                         }
                 }else{
-                    val userData:HashMap<String, Any>
-                    if(password.text.isEmpty()){
-                        userData = hashMapOf(
-                            "name" to name.text.toString(),
-                            "email" to email.text.toString(),
-                            "birthday" to birthday.text.toString(),
-                            "aboutMe" to aboutMe.text.toString(),
-                            "profilePic" to sUri,
-                        )
-                    }else{
-                        userData = hashMapOf(
-                            "name" to name.text.toString(),
-                            "email" to email.text.toString(),
-                            "password" to password.text.toString(),
-                            "birthday" to birthday.text.toString(),
-                            "aboutMe" to aboutMe.text.toString(),
-                            "profilePic" to sUri,
-                        )
+                    if(password.text.isNotEmpty()){
                         user.updatePassword(password.text.toString()).addOnCompleteListener{
                                 task ->
                             if (task.isSuccessful) {
@@ -216,16 +196,27 @@ class RegistrationFragment : Fragment() {
                             }
                         }
                     }
+                    val userData:HashMap<String, Any> = hashMapOf(
+                        "name" to name.text.toString(),
+                        "email" to email.text.toString(),
+                        "birthday" to birthday.text.toString(),
+                        "aboutMe" to aboutMe.text.toString(),
+                    )
+
                     val credential = EmailAuthProvider.getCredential(user.email!!, userDoc!!.documents[0]["password"].toString())
                     user.reauthenticate(credential).addOnCompleteListener {
                             user.updateEmail(email.text.toString())
                         }
                     db.collection("users").document(userDoc!!.documents[0].id)
                         .update(userData)
-                    CoroutineScope(Dispatchers.Default).launch { uploadPhoto(sUri)}.invokeOnCompletion {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                    if(sUri!=""){
+                        CoroutineScope(Dispatchers.Default).launch { uploadPhoto(sUri)}.invokeOnCompletion {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                            }
                         }
+                    }else{
+                        findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
                     }
                 }
             } else {
