@@ -19,6 +19,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.example.football_lobby.fragments.FindLobbyFragment
+import com.example.football_lobby.fragments.LobbyDetailsFragment
 import com.example.football_lobby.fragments.ProfileFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -74,6 +76,10 @@ class MainActivity : AppCompatActivity() {
                     showTopMenu(R.id.goToProfileGroup)
                     showBottomNavigationMain()
                 }
+                R.id.lobbyDetailsFragment -> {
+                    showTopMenu(R.id.inLobbyGroup)
+                    showBottomNavigationMain()
+                }
                 else -> {
                     showBottomNavigationMain()
                 }
@@ -122,6 +128,11 @@ class MainActivity : AppCompatActivity() {
                     }, 100)
                     true
                 }
+                R.id.leaveLobbyItem -> {
+                    val fragment = navHostFragment.childFragmentManager.fragments[0] as LobbyDetailsFragment
+                    fragment.leaveLobby()
+                    true
+                }
                 else -> {false}
             }
         }
@@ -134,6 +145,7 @@ class MainActivity : AppCompatActivity() {
     private fun hideTopMenu() {
         topAppBar.menu.setGroupVisible(R.id.profileGroup,false)
         topAppBar.menu.setGroupVisible(R.id.goToProfileGroup,false)
+        topAppBar.menu.setGroupVisible(R.id.inLobbyGroup, false)
     }
 
     private fun showTopNav() {

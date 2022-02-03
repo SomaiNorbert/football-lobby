@@ -17,4 +17,9 @@
             android:id="@+id/profileItem"
             android:title="Profile" />
     </group>
+    <group android:id="@+id/inLobbyGroup" >
+        <item
+            android:id="@+id/leaveLobbyItem"
+            android:title="Leave Lobby" />
+    </group>
 </menu>

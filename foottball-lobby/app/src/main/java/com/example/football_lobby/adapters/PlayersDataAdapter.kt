@@ -47,7 +47,7 @@ class PlayersDataAdapter(
         holder.chatButton.setOnClickListener {
             Log.d(TAG, "Chat Button Clicked")
         }
-        
+
         holder.kickFromLobbyButton.setOnClickListener {
             Log.d(TAG, "Kick Button Clicked")
         }
@@ -57,6 +57,24 @@ class PlayersDataAdapter(
 
     fun setData(list: ArrayList<Player>) {
         this.list = list
+    }
+
+    fun addPlayer(player: Player){
+        list.add(player)
+        notifyItemInserted(list.size-1)
+    }
+
+    fun removePlayerByUid(uid: String){
+        var player = Player()
+        for(i in list){
+            if(i.uid == uid){
+                player = i
+                break
+            }
+        }
+        val pos = list.indexOf(player)
+        list.remove(player)
+        notifyItemRemoved(pos)
     }
 
     inner class RecyclerViewHolder(itemView: View) :RecyclerView.ViewHolder(itemView), View.OnClickListener{

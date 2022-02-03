@@ -42,7 +42,7 @@ class LobbiesDataAdapter(
         holder.location.text = currentItem.location
         holder.date.text = currentItem.date
         holder.time.text = currentItem.time
-        holder.creator.text = currentItem.creator
+        holder.creator.text = currentItem.creatorName
         holder.numberOfPlayersInLobby.text = currentItem.numberOfPlayersInLobby.toString()
         holder.maximumNumberOfPlayers.text = (currentItem.maximumNumberOfPlayers*2).toString()
     }
@@ -104,7 +104,7 @@ class LobbiesDataAdapter(
             }else{
                 if(filters[0].isEmpty()){   //Name is Empty: we filter the full list by Creator
                     for(lobby in 0 until listFull.size){
-                        if(listFull[lobby].creator.lowercase().trim().contains(filters[1].lowercase().trim())){
+                        if(listFull[lobby].creatorName.lowercase().trim().contains(filters[1].lowercase().trim())){
                             filteredByNameAndCreator.add(listFull[lobby])
                         }
                     }
@@ -118,7 +118,7 @@ class LobbiesDataAdapter(
                     }else{
                         for(lobby in 0 until listFull.size){   //Neither Name nor creator is empty: we filter by both
                             if(listFull[lobby].lobbyName.lowercase().trim().contains(filters[0].lowercase().trim()) &&
-                                listFull[lobby].creator.lowercase().trim().contains(filters[1].lowercase().trim())){
+                                listFull[lobby].creatorName.lowercase().trim().contains(filters[1].lowercase().trim())){
                                 filteredByNameAndCreator.add(listFull[lobby])
                             }
                         }

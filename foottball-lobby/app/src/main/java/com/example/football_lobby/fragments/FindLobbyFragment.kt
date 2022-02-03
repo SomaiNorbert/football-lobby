@@ -14,7 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.football_lobby.R
 import com.example.football_lobby.adapters.LobbiesDataAdapter
 import com.example.football_lobby.models.Lobby
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.slider.Slider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -22,16 +25,19 @@ import kotlin.collections.ArrayList
 
 class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
+    private lateinit var auth: FirebaseAuth
     private lateinit var adapterLobbies: LobbiesDataAdapter
     private lateinit var db: FirebaseFirestore
     private lateinit var foundLobbiesRecyclerView: RecyclerView
     private lateinit var findLobbyByName: EditText
     private lateinit var findLobbyByCreator: EditText
     private lateinit var distanceSlider: Slider
+    private var clickedLobbyUid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         db = Firebase.firestore
+        auth = Firebase.auth
     }
 
     override fun onCreateView(
@@ -80,10 +86,21 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         val list = ArrayList<Lobby>()
         db.collection("lobbies").get().addOnSuccessListener {
             result ->
-            for(lobby in result.documents){
-                list.add(Lobby(lobby["uid"].toString(),lobby["name"].toString(), lobby["location"].toString(), lobby["date"].toString(),
-                lobby["time"].toString(), lobby["createdBy"].toString(), lobby["numberOfPlayersInLobby"].toString().toInt(),
-                lobby["maximumNumberOfPlayers"].toString().toInt(), lobby["public"] as Boolean))
+            for(lobby in result.documents) {
+                list.add(
+                    Lobby(
+                        lobby["uid"].toString(),
+                        lobby["name"].toString(),
+                        lobby["location"].toString(),
+                        lobby["date"].toString(),
+                        lobby["time"].toString(),
+                        lobby["creatorName"].toString(),
+                        lobby["creatorUid"].toString(),
+                        lobby["numberOfPlayersInLobby"].toString().toInt(),
+                        lobby["maximumNumberOfPlayers"].toString().toInt(),
+                        lobby["public"] as Boolean
+                    )
+                )
             }
             adapterLobbies.setData(list)
             adapterLobbies.notifyDataSetChanged()
@@ -99,8 +116,16 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
     override fun onItemClick(uid: String) {
         val bundle = Bundle()
+        clickedLobbyUid = uid
         bundle.putString("lobbyUid", uid)
         findNavController().navigate(R.id.action_global_lobbyDetailsFragment, bundle)
+    }
+
+    fun isPlayerInClickedLobby(): Boolean{
+        val res = Tasks.await(db.collection("lobbies").whereEqualTo("uid", clickedLobbyUid).get())
+        if((res.documents[0]["players"] as List<String>).contains(auth.currentUser!!.uid))
+            return true
+        return false
     }
 
 }
