@@ -3,8 +3,12 @@ package com.example.football_lobby.fragments
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,6 +22,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -28,6 +33,10 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 
@@ -97,13 +106,10 @@ class RegistrationFragment : Fragment() {
                     userDoc = result
                     val userData = result.documents[0]
                     sUri = userData["profilePic"].toString()
-                    Glide.with(this).load(userData["profilePic"]).into(profilePicture)
-                    if(profilePicture.drawable == null){
-                        storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
-                            res ->
-                            Glide.with(this).load(res).into(profilePicture)
-                        }
+                    storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
+                        Glide.with(requireActivity().baseContext).load(it).into(profilePicture)
                     }
+
                     name.setText(userData["name"].toString())
                     email.setText(userData["email"].toString())
                     birthday.setText(userData["birthday"].toString())
@@ -216,8 +222,11 @@ class RegistrationFragment : Fragment() {
                         }
                     db.collection("users").document(userDoc!!.documents[0].id)
                         .update(userData)
-                    uploadPhoto(sUri)
-                    findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                    CoroutineScope(Dispatchers.Default).launch { uploadPhoto(sUri)}.invokeOnCompletion {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                        }
+                    }
                 }
             } else {
                 printValidationError()
@@ -229,14 +238,37 @@ class RegistrationFragment : Fragment() {
     private fun uploadPhoto(path:String){
         val currentUser = auth.currentUser
         val ref = storageRef.child("images/${currentUser!!.uid}")
-        ref.putFile(path.toUri()).addOnCompleteListener{
+        var bitmap = when {
+            Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(requireContext().contentResolver, path.toUri())
+            else -> {
+                val source = ImageDecoder.createSource(requireContext().contentResolver, path.toUri())
+                ImageDecoder.decodeBitmap(source)
+            }
+        }
+        bitmap = cropToSquare(bitmap)
+        val resized = Bitmap.createScaledBitmap(bitmap, 200, 200, true)
+        val bAOS = ByteArrayOutputStream()
+        resized.compress(Bitmap.CompressFormat.JPEG, 30,bAOS)
+        Tasks.await(ref.putBytes(bAOS.toByteArray()).addOnCompleteListener{
             task ->
             if(task.isSuccessful){
                 Log.d(TAG, "File uploaded successfully!")
             }else{
                 Log.d(TAG, "File upload error!")
             }
-        }
+        })
+    }
+
+    private fun cropToSquare(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val newWidth = if (height > width) width else height
+        val newHeight = if (height > width) height - (height - width) else height
+        var cropW = (width - height) / 2
+        cropW = if (cropW < 0) 0 else cropW
+        var cropH = (height - width) / 2
+        cropH = if (cropH < 0) 0 else cropH
+        return Bitmap.createBitmap(bitmap, cropW, cropH, newWidth, newHeight)
     }
 
     private fun printValidationError() {

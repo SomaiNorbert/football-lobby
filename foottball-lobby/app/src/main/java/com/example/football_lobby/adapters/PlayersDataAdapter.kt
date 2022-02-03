@@ -1,6 +1,7 @@
 package com.example.football_lobby.adapters
 
 import android.content.ContentValues.TAG
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
 import com.example.football_lobby.models.Player
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PlayersDataAdapter(
     private var list: ArrayList<Player>,
@@ -32,11 +38,16 @@ class PlayersDataAdapter(
         }else{
             holder.ratingItemTxt.text = currentItem.rating.toString()
         }
-        Log.d(TAG, currentItem.profilePic)
-        Glide.with(holder.itemView.context).load(currentItem.profilePic).into(holder.profileImg)
+
+        val storageRef = Firebase.storage.reference
+        storageRef.child("images/${currentItem.uid}").downloadUrl.addOnSuccessListener {
+            Glide.with(holder.itemView.context).load(it).into(holder.profileImg)
+        }
+
         holder.chatButton.setOnClickListener {
             Log.d(TAG, "Chat Button Clicked")
         }
+        
         holder.kickFromLobbyButton.setOnClickListener {
             Log.d(TAG, "Kick Button Clicked")
         }

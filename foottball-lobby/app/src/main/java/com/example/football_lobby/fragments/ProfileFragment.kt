@@ -2,6 +2,7 @@ package com.example.football_lobby.fragments
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -23,6 +24,9 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -73,13 +77,11 @@ class ProfileFragment : Fragment() {
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { result ->
                     val userData = result.documents[0]
-                    Glide.with(this).load(userData["profilePic"]).into(profilePic)
-                    if(profilePic.drawable == null){
-                        storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
-                                res ->
-                            Glide.with(this).load(res).into(profilePic)
-                        }
+
+                    storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
+                        Glide.with(requireContext()).load(it).into(profilePic)
                     }
+
                     name.text = userData["name"].toString()
                     playedGames.text = userData["numberOfGamesPlayed"].toString()
                     if(userData["overallRating"].toString() == "0"){
