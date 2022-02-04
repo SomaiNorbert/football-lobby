@@ -3,32 +3,41 @@ package com.example.football_lobby.fragments
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import java.util.*
-import kotlin.collections.ArrayList
-
-import android.net.Uri
-import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import kotlin.collections.HashMap
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.util.*
 
 
 class RegistrationFragment : Fragment() {
@@ -46,6 +55,7 @@ class RegistrationFragment : Fragment() {
     private lateinit var registerButton: Button
     private lateinit var goToLogInBtn: TextView
     private lateinit var alreadyRegisterdTxt: TextView
+    private lateinit var storageRef: StorageReference
     private val validationErrors: ArrayList<String> = ArrayList()
     private var sUri = ""
 
@@ -53,6 +63,8 @@ class RegistrationFragment : Fragment() {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
         db = Firebase.firestore
+        val storage = Firebase.storage
+        storageRef = storage.reference
     }
 
     override fun onCreateView(
@@ -93,8 +105,10 @@ class RegistrationFragment : Fragment() {
                 .addOnSuccessListener { result ->
                     userDoc = result
                     val userData = result.documents[0]
-                    sUri = userData["profilePic"].toString()
-                    Glide.with(this).load(userData["profilePic"]).into(profilePicture)
+                    storageRef.child("images/${user.uid}").downloadUrl.addOnSuccessListener {
+                        Glide.with(requireActivity().baseContext).load(it).into(profilePicture)
+                    }
+
                     name.setText(userData["name"].toString())
                     email.setText(userData["email"].toString())
                     birthday.setText(userData["birthday"].toString())
@@ -104,23 +118,20 @@ class RegistrationFragment : Fragment() {
             profilePicture.setImageResource(R.drawable.profile_avatar)
         }
 
-        birthday.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH)
-                val day = calendar.get(Calendar.DAY_OF_MONTH)
-                var dpd = DatePickerDialog(context!!,16973939, { _, mYear, mMonth, mDay ->
-                    val mmMonth = mMonth + 1
-                    val date = "$mDay/$mmMonth/$mYear"
-                    birthday.setText(date)
-                }, year, month, day)
-                calendar.add(Calendar.YEAR, -5)
-                dpd.datePicker.maxDate = calendar.timeInMillis
-                dpd.show()
-                birthday.clearFocus()
-                aboutMe.requestFocus()
-            }
+        birthday.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            var dpd = DatePickerDialog(requireContext(), 16973939, { _, mYear, mMonth, mDay ->
+                val mmMonth = mMonth + 1
+                val date = "$mDay/$mmMonth/$mYear"
+                birthday.setText(date)
+            }, year, month, day)
+            calendar.add(Calendar.YEAR, -5)
+            dpd.datePicker.maxDate = calendar.timeInMillis
+            dpd.setTitle("Choose Birthday!")
+            dpd.show()
         }
 
         val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -156,10 +167,8 @@ class RegistrationFragment : Fragment() {
                                 val user = hashMapOf(
                                     "name" to name.text.toString(),
                                     "email" to email.text.toString(),
-                                    "password" to password.text.toString(),
                                     "birthday" to birthday.text.toString(),
                                     "aboutMe" to aboutMe.text.toString(),
-                                    "profilePic" to sUri,
                                     "numberOfGamesPlayed" to 0,
                                     "overallRating" to 0,
                                     "uid" to auth.uid
@@ -171,6 +180,7 @@ class RegistrationFragment : Fragment() {
                                         }
                                     }
                                 db.collection("users").add(user)
+                                uploadPhoto(sUri)
                                 findNavController().navigate(R.id.action_registrationFragment_to_findLobbyFragment)
                             } else {
                                 Toast.makeText(this.context, "Registration failed.", Toast.LENGTH_SHORT)
@@ -178,24 +188,7 @@ class RegistrationFragment : Fragment() {
                             }
                         }
                 }else{
-                    var userData:HashMap<String, Any>
-                    if(password.text.isEmpty()){
-                        userData = hashMapOf(
-                            "name" to name.text.toString(),
-                            "email" to email.text.toString(),
-                            "birthday" to birthday.text.toString(),
-                            "aboutMe" to aboutMe.text.toString(),
-                            "profilePic" to sUri,
-                        )
-                    }else{
-                        userData = hashMapOf(
-                            "name" to name.text.toString(),
-                            "email" to email.text.toString(),
-                            "password" to password.text.toString(),
-                            "birthday" to birthday.text.toString(),
-                            "aboutMe" to aboutMe.text.toString(),
-                            "profilePic" to sUri,
-                        )
+                    if(password.text.isNotEmpty()){
                         user.updatePassword(password.text.toString()).addOnCompleteListener{
                                 task ->
                             if (task.isSuccessful) {
@@ -203,19 +196,70 @@ class RegistrationFragment : Fragment() {
                             }
                         }
                     }
+                    val userData:HashMap<String, Any> = hashMapOf(
+                        "name" to name.text.toString(),
+                        "email" to email.text.toString(),
+                        "birthday" to birthday.text.toString(),
+                        "aboutMe" to aboutMe.text.toString(),
+                    )
+
                     val credential = EmailAuthProvider.getCredential(user.email!!, userDoc!!.documents[0]["password"].toString())
                     user.reauthenticate(credential).addOnCompleteListener {
                             user.updateEmail(email.text.toString())
                         }
                     db.collection("users").document(userDoc!!.documents[0].id)
                         .update(userData)
-                    findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                    if(sUri!=""){
+                        CoroutineScope(Dispatchers.Default).launch { uploadPhoto(sUri)}.invokeOnCompletion {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                            }
+                        }
+                    }else{
+                        findNavController().navigate(R.id.action_registrationFragment_to_profileFragment)
+                    }
                 }
             } else {
                 printValidationError()
                 view.findViewById<ScrollView>(R.id.scrollView).scrollTo(0,0)
             }
         }
+    }
+
+    private fun uploadPhoto(path:String){
+        val currentUser = auth.currentUser
+        val ref = storageRef.child("images/${currentUser!!.uid}")
+        var bitmap = when {
+            Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(requireContext().contentResolver, path.toUri())
+            else -> {
+                val source = ImageDecoder.createSource(requireContext().contentResolver, path.toUri())
+                ImageDecoder.decodeBitmap(source)
+            }
+        }
+        bitmap = cropToSquare(bitmap)
+        val resized = Bitmap.createScaledBitmap(bitmap, 200, 200, true)
+        val bAOS = ByteArrayOutputStream()
+        resized.compress(Bitmap.CompressFormat.JPEG, 30,bAOS)
+        Tasks.await(ref.putBytes(bAOS.toByteArray()).addOnCompleteListener{
+            task ->
+            if(task.isSuccessful){
+                Log.d(TAG, "File uploaded successfully!")
+            }else{
+                Log.d(TAG, "File upload error!")
+            }
+        })
+    }
+
+    private fun cropToSquare(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        val newWidth = if (height > width) width else height
+        val newHeight = if (height > width) height - (height - width) else height
+        var cropW = (width - height) / 2
+        cropW = if (cropW < 0) 0 else cropW
+        var cropH = (height - width) / 2
+        cropH = if (cropH < 0) 0 else cropH
+        return Bitmap.createBitmap(bitmap, cropW, cropH, newWidth, newHeight)
     }
 
     private fun printValidationError() {

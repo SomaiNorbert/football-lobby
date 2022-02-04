@@ -82,4 +82,15 @@
         android:name="com.example.football_lobby.fragments.CreateLobbyFragment"
         android:label="fragment_create_lobby"
         tools:layout="@layout/fragment_create_lobby" /><action android:id="@+id/action_global_createLobbyFragment" app:destination="@id/createLobbyFragment"/><action android:id="@+id/action_global_findLobbyFragment" app:destination="@id/findLobbyFragment"/>
+    <fragment
+        android:id="@+id/lobbyDetailsFragment"
+        android:name="com.example.football_lobby.fragments.LobbyDetailsFragment"
+        android:label="fragment_lobby_details"
+        tools:layout="@layout/fragment_lobby_details" >
+        <argument
+            android:name="lobbyUid"
+            app:argType="string"
+            android:defaultValue=""/>
+    </fragment>
+    <action android:id="@+id/action_global_lobbyDetailsFragment" app:destination="@id/lobbyDetailsFragment" />
 </navigation>

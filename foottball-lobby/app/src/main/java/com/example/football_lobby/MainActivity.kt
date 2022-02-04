@@ -1,7 +1,10 @@
 package com.example.football_lobby
 
+import android.Manifest
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -16,6 +19,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.example.football_lobby.fragments.FindLobbyFragment
+import com.example.football_lobby.fragments.LobbyDetailsFragment
 import com.example.football_lobby.fragments.ProfileFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -29,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.hide()
+
+        requestPermissions()
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
         bottomNavigationMain = findViewById(R.id.bottomNavigationViewMain)
@@ -67,6 +74,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.createLobbyFragment -> {
                     hideTopNav()
                     showTopMenu(R.id.goToProfileGroup)
+                    showBottomNavigationMain()
+                }
+                R.id.lobbyDetailsFragment -> {
+                    showTopMenu(R.id.inLobbyGroup)
                     showBottomNavigationMain()
                 }
                 else -> {
@@ -117,6 +128,11 @@ class MainActivity : AppCompatActivity() {
                     }, 100)
                     true
                 }
+                R.id.leaveLobbyItem -> {
+                    val fragment = navHostFragment.childFragmentManager.fragments[0] as LobbyDetailsFragment
+                    fragment.leaveLobby()
+                    true
+                }
                 else -> {false}
             }
         }
@@ -129,6 +145,7 @@ class MainActivity : AppCompatActivity() {
     private fun hideTopMenu() {
         topAppBar.menu.setGroupVisible(R.id.profileGroup,false)
         topAppBar.menu.setGroupVisible(R.id.goToProfileGroup,false)
+        topAppBar.menu.setGroupVisible(R.id.inLobbyGroup, false)
     }
 
     private fun showTopNav() {
@@ -155,5 +172,15 @@ class MainActivity : AppCompatActivity() {
     private fun hideBottomNavigationTotally() {
         bottomNavigationProfile.visibility = View.GONE
         bottomNavigationMain.visibility = View.GONE
+    }
+
+    private fun requestPermissions(){
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        }
+        if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0)
+        }
     }
 }

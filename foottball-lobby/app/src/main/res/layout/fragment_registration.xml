@@ -129,7 +129,8 @@
                 android:id="@+id/birthdayEdt"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:inputType="date" />
+                android:inputType="date"
+                android:focusable="false"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout

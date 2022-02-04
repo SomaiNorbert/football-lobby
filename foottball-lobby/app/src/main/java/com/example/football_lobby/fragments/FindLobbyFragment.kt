@@ -1,35 +1,43 @@
 package com.example.football_lobby.fragments
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.TextView
+import androidx.core.widget.doOnTextChanged
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.football_lobby.R
-import com.example.football_lobby.adapters.DataAdapter
+import com.example.football_lobby.adapters.LobbiesDataAdapter
 import com.example.football_lobby.models.Lobby
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.slider.Slider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.awaitAll
-import java.lang.Thread.sleep
-import java.math.BigDecimal
-import java.math.RoundingMode
+import kotlin.collections.ArrayList
 
-class FindLobbyFragment : Fragment(), DataAdapter.OnItemClickedListener {
+class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
+    private lateinit var auth: FirebaseAuth
+    private lateinit var adapterLobbies: LobbiesDataAdapter
     private lateinit var db: FirebaseFirestore
     private lateinit var foundLobbiesRecyclerView: RecyclerView
+    private lateinit var findLobbyByName: EditText
+    private lateinit var findLobbyByCreator: EditText
+    private lateinit var distanceSlider: Slider
+    private var clickedLobbyUid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         db = Firebase.firestore
+        auth = Firebase.auth
     }
 
     override fun onCreateView(
@@ -43,43 +51,81 @@ class FindLobbyFragment : Fragment(), DataAdapter.OnItemClickedListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        findLobbyByName = view.findViewById(R.id.findLobbyByNameTextInputEditText)
+        findLobbyByCreator = view.findViewById(R.id.findLobbyByPlayerNameTextInputEditText)
         foundLobbiesRecyclerView = view.findViewById(R.id.foundLobbiesRecyclerView)
+        distanceSlider = view.findViewById(R.id.distanceSlider)
         val distTxt = view.findViewById<TextView>(R.id.distanceTxt)
+        setupRecyclerView()
+        loadAllLobbiesIntoAdapter()
 
-        view.findViewById<Slider>(R.id.distanceSlider).addOnChangeListener { _, value, _ ->
-            if(value < 1){
+        distanceSlider.addOnChangeListener { _, value, _ ->
+            if (value < 1) {
                 distTxt.text = "<1"
-            }else{
+            } else {
                 distTxt.text = value.toInt().toString()
             }
+            filter()
         }
 
-        getAllLobbies()
-
+        findLobbyByName.doOnTextChanged { _,_,_,_ ->
+            filter()
+        }
+        findLobbyByCreator.doOnTextChanged { _, _, _, _ ->
+            filter()
+        }
+        //filter() TODO
     }
 
-    private fun getAllLobbies():ArrayList<Lobby> {
+    private fun filter() {
+        adapterLobbies.filter.filter(findLobbyByName.text.toString() + "/" +
+                findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
+    }
+
+    private fun loadAllLobbiesIntoAdapter(){
         val list = ArrayList<Lobby>()
         db.collection("lobbies").get().addOnSuccessListener {
             result ->
-            for(lobby in result.documents){
-                Log.d(TAG, lobby.toString())
-                list.add(Lobby(lobby["name"].toString(), lobby["location"].toString(), lobby["date"].toString(),
-                lobby["time"].toString(), lobby["createdBy"].toString(), lobby["numberOfPlayersInLobby"].toString().toInt(),
-                lobby["maximumNumberOfPlayers"].toString().toInt(), lobby["public"] as Boolean))
+            for(lobby in result.documents) {
+                list.add(
+                    Lobby(
+                        lobby["uid"].toString(),
+                        lobby["name"].toString(),
+                        lobby["location"].toString(),
+                        lobby["date"].toString(),
+                        lobby["time"].toString(),
+                        lobby["creatorName"].toString(),
+                        lobby["creatorUid"].toString(),
+                        lobby["numberOfPlayersInLobby"].toString().toInt(),
+                        lobby["maximumNumberOfPlayers"].toString().toInt(),
+                        lobby["public"] as Boolean
+                    )
+                )
             }
-            showLobbies(list)
+            adapterLobbies.setData(list)
+            adapterLobbies.notifyDataSetChanged()
         }
-        return list
     }
 
-    private fun showLobbies(list:ArrayList<Lobby>){
-        Log.d(TAG, "List Size2" + list.size)
-        foundLobbiesRecyclerView.adapter = DataAdapter(list, this)
+    private fun setupRecyclerView(){
+        adapterLobbies = LobbiesDataAdapter(ArrayList<Lobby>(), this)
+        foundLobbiesRecyclerView.adapter = adapterLobbies
         foundLobbiesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         foundLobbiesRecyclerView.setHasFixedSize(true)
     }
 
-    override fun onItemClick(position: Int) {
+    override fun onItemClick(uid: String) {
+        val bundle = Bundle()
+        clickedLobbyUid = uid
+        bundle.putString("lobbyUid", uid)
+        findNavController().navigate(R.id.action_global_lobbyDetailsFragment, bundle)
     }
+
+    fun isPlayerInClickedLobby(): Boolean{
+        val res = Tasks.await(db.collection("lobbies").whereEqualTo("uid", clickedLobbyUid).get())
+        if((res.documents[0]["players"] as List<String>).contains(auth.currentUser!!.uid))
+            return true
+        return false
+    }
+
 }

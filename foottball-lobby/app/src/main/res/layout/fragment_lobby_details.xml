@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.LobbyDetailsFragment">
+
+
+    <TextView
+        android:id="@+id/gameNameTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:text="Game Name"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/locationDetailTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Game Location"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/gameNameTxt"
+        app:layout_constraintTop_toBottomOf="@+id/gameNameTxt" />
+
+    <TextView
+        android:id="@+id/dateAndTimeTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Date and Time"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/locationDetailTxt"
+        app:layout_constraintTop_toBottomOf="@+id/locationDetailTxt" />
+
+    <TextView
+        android:id="@+id/numberOfPlayersInLobby"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Number of Players:"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/dateAndTimeTxt"
+        app:layout_constraintTop_toBottomOf="@+id/dateAndTimeTxt" />
+
+    <TextView
+        android:id="@+id/numberOfPlayersInLobbyTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="N"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/numberOfPlayersInLobby"
+        app:layout_constraintTop_toTopOf="@+id/numberOfPlayersInLobby" />
+
+    <TextView
+        android:id="@+id/textView12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="/"
+        app:layout_constraintStart_toEndOf="@+id/numberOfPlayersInLobbyTxt"
+        app:layout_constraintTop_toTopOf="@+id/numberOfPlayersInLobby"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/maximumNumberOfPlayersInLobbyTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="M"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/textView12"
+        app:layout_constraintTop_toTopOf="@+id/numberOfPlayersInLobby" />
+
+    <RadioGroup
+        android:id="@+id/detailRG"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/numberOfPlayersInLobby">
+
+        <RadioButton
+            android:id="@+id/publicDetailRB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:text="Public"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/privateDetailRB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Private"
+            android:textSize="16sp" />
+    </RadioGroup>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/playersInLobbyRV"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/joinLobbyButton"
+        tools:listitem="@layout/players_in_lobby_item_layout" />
+
+    <Button
+        android:id="@+id/joinLobbyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Join Lobby"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/numberOfPlayersInLobby" />
+</androidx.constraintlayout.widget.ConstraintLayout>
