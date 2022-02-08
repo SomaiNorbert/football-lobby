@@ -110,7 +110,7 @@ class ProfileFragment : Fragment() {
     fun deleteUser(){
         val user = auth.currentUser!!
         user.delete();
-        //DELETE from DBs
+        //DELETE from DBs TODO
         navigateToStartScreen()
     }
 

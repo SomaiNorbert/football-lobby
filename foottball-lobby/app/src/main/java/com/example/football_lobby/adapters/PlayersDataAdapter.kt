@@ -12,7 +12,12 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
+import com.example.football_lobby.models.Lobby
 import com.example.football_lobby.models.Player
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.CoroutineScope
@@ -21,8 +26,12 @@ import kotlinx.coroutines.launch
 
 class PlayersDataAdapter(
     private var list: ArrayList<Player>,
-    private var listener: OnItemClickedListener
+    private var listener: OnItemClickedListener,
+    private var creatorUid: String
 ) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>() {
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayersDataAdapter.RecyclerViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.players_in_lobby_item_layout, parent, false)
@@ -43,6 +52,14 @@ class PlayersDataAdapter(
         storageRef.child("images/${currentItem.uid}").downloadUrl.addOnSuccessListener {
             Glide.with(holder.itemView.context).load(it).into(holder.profileImg)
         }
+        holder.kickFromLobbyButton.visibility = View.GONE
+        if(auth.currentUser!!.uid == currentItem.uid){
+            holder.chatButton.visibility = View.GONE
+        }else{
+            holder.chatButton.visibility = View.VISIBLE
+            if(auth.currentUser!!.uid == creatorUid)
+                holder.kickFromLobbyButton.visibility = View.VISIBLE
+        }
 
         holder.chatButton.setOnClickListener {
             Log.d(TAG, "Chat Button Clicked")
@@ -61,7 +78,7 @@ class PlayersDataAdapter(
 
     fun addPlayer(player: Player){
         list.add(player)
-        notifyItemInserted(list.size-1)
+        notifyItemInserted(itemCount -1)
     }
 
     fun removePlayerByUid(uid: String){
@@ -88,6 +105,8 @@ class PlayersDataAdapter(
 
         init {
             itemView.setOnClickListener(this)
+            auth = Firebase.auth
+            db = Firebase.firestore
         }
 
         override fun onClick(p0: View?) {

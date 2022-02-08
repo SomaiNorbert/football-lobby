@@ -18,11 +18,13 @@
             android:layout_height="70dp"
             android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:background="#969696"
             android:scaleType="centerCrop"
             android:src="@drawable/profile_avatar"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/chatButton"/>
 
         <TextView
             android:id="@+id/playerNameItemTxt"
@@ -59,7 +61,6 @@
             android:id="@+id/chatButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:text="Chat"
             android:textSize="14sp"
