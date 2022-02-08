@@ -69,7 +69,6 @@ class MyLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
             }
             adapterLobbies.setData(list)
             adapterLobbies.notifyDataSetChanged()
-            Log.d(TAG, list.toString())
             if(list.size == 0){
                 noLobbiesFoundTxt.visibility = View.VISIBLE
             }else{

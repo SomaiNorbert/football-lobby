@@ -100,5 +100,16 @@
         android:id="@+id/myLobbiesFragment"
         android:name="com.example.football_lobby.fragments.MyLobbiesFragment"
         android:label="fragment_my_lobbies"
-        tools:layout="@layout/fragment_my_lobbies" /><action android:id="@+id/action_global_myLobbiesFragment" app:destination="@id/myLobbiesFragment"/>
+        tools:layout="@layout/fragment_my_lobbies" />
+    <action android:id="@+id/action_global_myLobbiesFragment" app:destination="@id/myLobbiesFragment" />
+    <fragment
+        android:id="@+id/myFriendsFragment"
+        android:name="com.example.football_lobby.fragments.MyFriendsFragment"
+        android:label="fragment_my_friends"
+        tools:layout="@layout/fragment_my_friends" >
+        <action
+            android:id="@+id/action_myFriendsFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
+    <action android:id="@+id/action_global_myFriendsFragment" app:destination="@id/myFriendsFragment" />
 </navigation>

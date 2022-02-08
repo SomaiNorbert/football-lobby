@@ -96,20 +96,21 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         val list = ArrayList<Lobby>()
         val result = Tasks.await(db.collection("lobbies").get())
         for (lobby in result.documents) {
-            list.add(
-                Lobby(
-                    lobby["uid"].toString(),
-                    lobby["name"].toString(),
-                    lobby["location"].toString(),
-                    lobby["date"].toString(),
-                    lobby["time"].toString(),
-                    lobby["creatorName"].toString(),
-                    lobby["creatorUid"].toString(),
-                    lobby["numberOfPlayersInLobby"].toString().toInt(),
-                    lobby["maximumNumberOfPlayers"].toString().toInt(),
-                    lobby["public"] as Boolean
+            if (lobby["public"] as Boolean)
+                list.add(
+                    Lobby(
+                        lobby["uid"].toString(),
+                        lobby["name"].toString(),
+                        lobby["location"].toString(),
+                        lobby["date"].toString(),
+                        lobby["time"].toString(),
+                        lobby["creatorName"].toString(),
+                        lobby["creatorUid"].toString(),
+                        lobby["numberOfPlayersInLobby"].toString().toInt(),
+                        lobby["maximumNumberOfPlayers"].toString().toInt(),
+                        lobby["public"] as Boolean
+                    )
                 )
-            )
         }
         adapterLobbies.setData(list)
     }

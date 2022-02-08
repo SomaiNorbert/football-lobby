@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
                     showTopMenu(R.id.profileGroup)
                     showBottomNavigationProfile()
                 }
-                R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment -> {
+                R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment-> {
                     hideTopNav()
                     showTopMenu(R.id.goToProfileGroup)
                     showBottomNavigationMain()
@@ -87,6 +87,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.myLobbiesItem -> {
                     navController.navigate(R.id.action_global_myLobbiesFragment)
+                    true
+                }
+                R.id.friendsItem -> {
+                    navController.navigate(R.id.action_global_myFriendsFragment)
                     true
                 }
                 else -> {
