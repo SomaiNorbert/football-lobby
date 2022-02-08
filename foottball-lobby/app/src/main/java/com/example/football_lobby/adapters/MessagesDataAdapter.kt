@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
 import com.example.football_lobby.models.Message
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import de.hdodenhof.circleimageview.CircleImageView
@@ -24,6 +25,13 @@ class MessagesDataAdapter(
     override fun onBindViewHolder(holder: MessagesDataAdapter.RecyclerViewHolder, position: Int) {
         val currentItem = list[position]
         holder.messageTextView.text = currentItem.message
+
+        if(Firebase.auth.currentUser!!.uid ==currentItem.senderUid){
+            holder.messageTextView.setBackgroundResource(R.drawable.rounded_message_blue)
+        }else{
+            holder.messageTextView.setBackgroundResource(R.drawable.rounded_message_gray)
+        }
+
         holder.senderTextView.text = currentItem.senderName
         val storageRef = Firebase.storage.reference
         Glide.with(holder.itemView.context).load(R.drawable.profile_avatar).into(holder.senderImageView)

@@ -49,29 +49,18 @@ class MainActivity : AppCompatActivity() {
             showTopNav()
             hideTopMenu()
             when (destination.id) {
-                R.id.loginFragment -> {
-                    hideBottomNavigationTotally()
-                }
-                R.id.registrationFragment -> {
+                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment -> {
                     hideBottomNavigationTotally()
                 }
                 R.id.startFragment -> {
                     hideTopNav()
                     hideBottomNavigationTotally()
                 }
-                R.id.forgotPasswordFragment -> {
-                    hideBottomNavigationTotally()
-                }
                 R.id.profileFragment -> {
                     showTopMenu(R.id.profileGroup)
                     showBottomNavigationProfile()
                 }
-                R.id.findLobbyFragment -> {
-                    hideTopNav()
-                    showTopMenu(R.id.goToProfileGroup)
-                    showBottomNavigationMain()
-                }
-                R.id.createLobbyFragment -> {
+                R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment -> {
                     hideTopNav()
                     showTopMenu(R.id.goToProfileGroup)
                     showBottomNavigationMain()
@@ -94,6 +83,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.createLobbyItem -> {
                     navController.navigate(R.id.action_global_createLobbyFragment)
+                    true
+                }
+                R.id.myLobbiesItem -> {
+                    navController.navigate(R.id.action_global_myLobbiesFragment)
                     true
                 }
                 else -> {
@@ -178,9 +171,6 @@ class MainActivity : AppCompatActivity() {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
             && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0)
-        }
-        if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 0)
         }
     }
 }

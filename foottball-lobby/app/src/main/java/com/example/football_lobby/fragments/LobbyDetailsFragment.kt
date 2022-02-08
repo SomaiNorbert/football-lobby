@@ -129,8 +129,13 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                         CoroutineScope(Dispatchers.Main).launch { adapterMessages.notifyDataSetChanged() }
                     }
                 if(currentUser.uid == creatorUid){
-                    detailRG.visibility = View.VISIBLE
-                    joinButton.visibility = View.INVISIBLE
+                    if(playersList.contains(currentUser.uid)){
+                        detailRG.visibility = View.VISIBLE
+                        joinButton.visibility = View.INVISIBLE
+                    }else{
+                        detailRG.visibility = View.INVISIBLE
+                        joinButton.visibility = View.VISIBLE
+                    }
                 }else{
                     detailRG.visibility = View.INVISIBLE
                     if(playersList.contains(currentUser.uid)){
@@ -178,9 +183,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     var doc : DocumentSnapshot
                     db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get().addOnSuccessListener {
                         result -> doc = result.documents[0]
-                        val messages = doc["messages"] as ArrayList<Message>
-                        messages.add(mes)
-                        db.collection("chat").document(doc.id).update("messages", messages.toList())
+                        if(doc["messages"] != null){
+                            val messages = doc["messages"] as ArrayList<Message>
+                            messages.add(mes)
+                            db.collection("chat").document(doc.id).update("messages", messages.toList())
+                        }else{
+                            db.collection("chat").document(doc.id).update("messages", mes)
+                        }
+
                     }
                 }
         }
@@ -242,8 +252,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
 
     private fun loadMessagesIntoDataAdapter(){
         val messages = ArrayList<Message>()
-        val chatDoc = Tasks.await(db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get())
-            .documents[0]
+        val chatDoc = Tasks.await(db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get()).documents[0]
         val mes = chatDoc["messages"] as ArrayList<HashMap<String, String>>
         for(message in mes){
             messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))

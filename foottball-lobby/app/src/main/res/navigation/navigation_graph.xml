@@ -96,4 +96,9 @@
             app:destination="@id/profileFragment" />
     </fragment>
     <action android:id="@+id/action_global_lobbyDetailsFragment" app:destination="@id/lobbyDetailsFragment" />
+    <fragment
+        android:id="@+id/myLobbiesFragment"
+        android:name="com.example.football_lobby.fragments.MyLobbiesFragment"
+        android:label="fragment_my_lobbies"
+        tools:layout="@layout/fragment_my_lobbies" /><action android:id="@+id/action_global_myLobbiesFragment" app:destination="@id/myLobbiesFragment"/>
 </navigation>
