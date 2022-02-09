@@ -112,4 +112,9 @@
             app:destination="@id/profileFragment" />
     </fragment>
     <action android:id="@+id/action_global_myFriendsFragment" app:destination="@id/myFriendsFragment" />
+    <fragment
+        android:id="@+id/privateChatFragment"
+        android:name="com.example.football_lobby.fragments.PrivateChatFragment"
+        android:label="fragment_private_chat"
+        tools:layout="@layout/fragment_private_chat" /><action android:id="@+id/action_global_privateChatFragment" app:destination="@id/privateChatFragment"/>
 </navigation>

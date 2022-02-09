@@ -31,7 +31,7 @@ import kotlinx.coroutines.*
 import kotlin.collections.ArrayList
 
 
-class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener, PlayersDataAdapter.OnButtonClicked {
+class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -169,6 +169,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                                 chatRV.scrollToPosition(adapterMessages.itemCount-1)
                             }else{
                                 Toast.makeText(requireContext(), "Please join first!", Toast.LENGTH_LONG).show()
+                                tabLayout.getTabAt(0)?.select()
                             }
 
                         }
@@ -285,7 +286,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun setupPlayersRecyclerView(){
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this,this, lobbyData["creatorUid"].toString())
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
         playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
         playersInLobbyRV.setHasFixedSize(true)
@@ -308,5 +309,11 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             "players" to playersList.toList()
         )
         db.collection("lobbies").document(documentID).update(update)
+    }
+
+    override fun onChatButtonClicked(uid: String) {
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        findNavController().navigate(R.id.action_global_privateChatFragment, bundle)
     }
 }

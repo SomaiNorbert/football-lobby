@@ -22,7 +22,6 @@ import com.google.firebase.storage.ktx.storage
 class PlayersDataAdapter(
     private var list: ArrayList<Player>,
     private var listener: OnItemClickedListener,
-    private var btnListener: OnButtonClicked,
     private var creatorUid: String,
 ) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>() {
 
@@ -58,11 +57,11 @@ class PlayersDataAdapter(
         }
 
         holder.chatButton.setOnClickListener {
-            Log.d(TAG, "Chat Button Clicked")
+            listener.onChatButtonClicked(currentItem.uid)
         }
 
         holder.kickFromLobbyButton.setOnClickListener {
-            btnListener.onKickButtonClicked(currentItem.uid)
+            listener.onKickButtonClicked(currentItem.uid)
         }
     }
 
@@ -116,9 +115,7 @@ class PlayersDataAdapter(
 
     interface OnItemClickedListener{
         fun onItemClick(uid: String)
-    }
-
-    interface OnButtonClicked{
         fun onKickButtonClicked(uid: String)
+        fun onChatButtonClicked(uid: String)
     }
 }
