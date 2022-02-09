@@ -27,7 +27,8 @@ import kotlinx.coroutines.launch
 class PlayersDataAdapter(
     private var list: ArrayList<Player>,
     private var listener: OnItemClickedListener,
-    private var creatorUid: String
+    private var creatorUid: String,
+    private var lobbyUid: String
 ) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>() {
 
     private lateinit var auth: FirebaseAuth
@@ -66,7 +67,14 @@ class PlayersDataAdapter(
         }
 
         holder.kickFromLobbyButton.setOnClickListener {
-            Log.d(TAG, "Kick Button Clicked")
+            removePlayerByUid(currentItem.uid)  //todo MUST DECREASE NUMBER OF PLAYERS IN FRAGMENT ON KICK
+            db.collection("lobbies").whereEqualTo("uid", lobbyUid).get().addOnSuccessListener {
+                val players = it.documents[0]["players"] as ArrayList<String>
+                players.remove(currentItem.uid)
+                db.collection("lobbies").document(it.documents[0].id)
+                    .update("players", players,
+                        "numberOfPlayersInLobby", it.documents[0]["numberOfPlayersInLobby"].toString().toInt()-1)
+            }
         }
     }
 

@@ -130,6 +130,11 @@ class MainActivity : AppCompatActivity() {
                     fragment.leaveLobby()
                     true
                 }
+                R.id.addFriendItem -> {
+                    val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
+                    fragment.addFriend()
+                    true
+                }
                 else -> {false}
             }
         }
@@ -143,6 +148,7 @@ class MainActivity : AppCompatActivity() {
         topAppBar.menu.setGroupVisible(R.id.profileGroup,false)
         topAppBar.menu.setGroupVisible(R.id.goToProfileGroup,false)
         topAppBar.menu.setGroupVisible(R.id.inLobbyGroup, false)
+        topAppBar.menu.setGroupVisible(R.id.addFriendGroup, false)
     }
 
     private fun showTopNav() {

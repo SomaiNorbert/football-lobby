@@ -76,7 +76,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener {
     }
 
     private fun setupRecyclerView() {
-        adapterPlayers = PlayersDataAdapter(ArrayList(),this,"")
+        adapterPlayers = PlayersDataAdapter(ArrayList(),this,"", "")
         myFriendsRV.adapter = adapterPlayers
         myFriendsRV.layoutManager = LinearLayoutManager(requireContext())
         myFriendsRV.setHasFixedSize(true)

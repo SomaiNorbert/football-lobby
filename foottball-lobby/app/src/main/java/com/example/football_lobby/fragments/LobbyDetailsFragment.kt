@@ -162,10 +162,15 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                             chatLL.visibility = View.GONE
                         }
                         1 -> {
-                            playersInLobbyRV.visibility = View.INVISIBLE
-                            chatRV.visibility = View.VISIBLE
-                            chatLL.visibility = View.VISIBLE
-                            chatRV.scrollToPosition(adapterMessages.itemCount-1)
+                            if(isCurrentUserInLobby()){
+                                playersInLobbyRV.visibility = View.INVISIBLE
+                                chatRV.visibility = View.VISIBLE
+                                chatLL.visibility = View.VISIBLE
+                                chatRV.scrollToPosition(adapterMessages.itemCount-1)
+                            }else{
+                                Toast.makeText(requireContext(), "Please join first!", Toast.LENGTH_LONG).show()
+                            }
+
                         }
                     }
             }
@@ -280,7 +285,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun setupPlayersRecyclerView(){
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString())
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString(), lobbyData["uid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
         playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
         playersInLobbyRV.setHasFixedSize(true)

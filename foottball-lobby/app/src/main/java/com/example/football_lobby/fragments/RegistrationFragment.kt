@@ -171,7 +171,8 @@ class RegistrationFragment : Fragment() {
                                     "aboutMe" to aboutMe.text.toString(),
                                     "numberOfGamesPlayed" to 0,
                                     "overallRating" to 0,
-                                    "uid" to auth.uid
+                                    "uid" to auth.uid,
+                                    "friends" to emptyList<String>()
                                 )
                                 auth.currentUser!!.sendEmailVerification()
                                     .addOnCompleteListener { task2 ->
