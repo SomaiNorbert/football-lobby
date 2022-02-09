@@ -19,10 +19,9 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener {
+class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener, PlayersDataAdapter.OnButtonClicked {
 
     private lateinit var db: FirebaseFirestore
     private lateinit var myFriendsRV: RecyclerView
@@ -76,7 +75,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener {
     }
 
     private fun setupRecyclerView() {
-        adapterPlayers = PlayersDataAdapter(ArrayList(),this,"", "")
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, this, "")
         myFriendsRV.adapter = adapterPlayers
         myFriendsRV.layoutManager = LinearLayoutManager(requireContext())
         myFriendsRV.setHasFixedSize(true)
@@ -87,4 +86,6 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener {
         bundle.putString("playerUid", uid)
         findNavController().navigate(R.id.action_myFriendsFragment_to_profileFragment, bundle)
     }
+
+    override fun onKickButtonClicked(uid: String) {}
 }

@@ -1,7 +1,6 @@
 package com.example.football_lobby.adapters
 
 import android.content.ContentValues.TAG
-import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
-import com.example.football_lobby.models.Lobby
 import com.example.football_lobby.models.Player
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -20,15 +18,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class PlayersDataAdapter(
     private var list: ArrayList<Player>,
     private var listener: OnItemClickedListener,
+    private var btnListener: OnButtonClicked,
     private var creatorUid: String,
-    private var lobbyUid: String
 ) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>() {
 
     private lateinit var auth: FirebaseAuth
@@ -67,14 +62,7 @@ class PlayersDataAdapter(
         }
 
         holder.kickFromLobbyButton.setOnClickListener {
-            removePlayerByUid(currentItem.uid)  //todo MUST DECREASE NUMBER OF PLAYERS IN FRAGMENT ON KICK
-            db.collection("lobbies").whereEqualTo("uid", lobbyUid).get().addOnSuccessListener {
-                val players = it.documents[0]["players"] as ArrayList<String>
-                players.remove(currentItem.uid)
-                db.collection("lobbies").document(it.documents[0].id)
-                    .update("players", players,
-                        "numberOfPlayersInLobby", it.documents[0]["numberOfPlayersInLobby"].toString().toInt()-1)
-            }
+            btnListener.onKickButtonClicked(currentItem.uid)
         }
     }
 
@@ -128,5 +116,9 @@ class PlayersDataAdapter(
 
     interface OnItemClickedListener{
         fun onItemClick(uid: String)
+    }
+
+    interface OnButtonClicked{
+        fun onKickButtonClicked(uid: String)
     }
 }

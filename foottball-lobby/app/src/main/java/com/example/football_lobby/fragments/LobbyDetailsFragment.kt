@@ -31,7 +31,7 @@ import kotlinx.coroutines.*
 import kotlin.collections.ArrayList
 
 
-class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener {
+class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener, PlayersDataAdapter.OnButtonClicked {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -285,7 +285,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun setupPlayersRecyclerView(){
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString(), lobbyData["uid"].toString())
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this,this, lobbyData["creatorUid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
         playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
         playersInLobbyRV.setHasFixedSize(true)
@@ -295,5 +295,18 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         val bundle = Bundle()
         bundle.putString("playerUid", uid)
         findNavController().navigate(R.id.action_lobbyDetailsFragment_to_profileFragment, bundle)
+    }
+
+    override fun onKickButtonClicked(uid: String) {
+        adapterPlayers.removePlayerByUid(uid)
+        playersList.remove(uid)
+        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
+        npil -= 1
+        numberOfPlayersInLobbyTxt.text = npil.toString()
+        val update = hashMapOf(
+            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
+            "players" to playersList.toList()
+        )
+        db.collection("lobbies").document(documentID).update(update)
     }
 }
