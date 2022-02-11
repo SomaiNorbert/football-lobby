@@ -135,8 +135,9 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                 db.collection("users").whereEqualTo("uid", user.uid).get()
                     .addOnSuccessListener { result ->
                         userName = result.documents[0]["name"].toString()
+                        val lobbyUid = UUID.randomUUID().toString()
                         val lobby = hashMapOf(
-                            "uid" to UUID.randomUUID().toString(),
+                            "uid" to lobbyUid,
                             "name" to lobbyName.text.toString(),
                             "location" to location.text.toString(),
                             "date" to date.text.toString(),
@@ -149,6 +150,8 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                             "players" to listOf(user.uid)
                         )
                         db.collection("lobbies").add(lobby)
+                        db.collection("chat").add(hashMapOf("lobbyUid" to lobbyUid,
+                            "messages" to emptyList<HashMap<String,String>>()))
                         findNavController().navigate(R.id.action_global_findLobbyFragment)
                     }
             }else{

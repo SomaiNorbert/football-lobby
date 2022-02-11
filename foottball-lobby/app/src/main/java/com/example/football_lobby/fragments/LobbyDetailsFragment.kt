@@ -6,33 +6,32 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import android.widget.TextView
-import androidx.navigation.fragment.navArgs
+import android.widget.*
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.football_lobby.R
+import com.example.football_lobby.adapters.MessagesDataAdapter
 import com.example.football_lobby.adapters.PlayersDataAdapter
+import com.example.football_lobby.models.Message
 import com.example.football_lobby.models.Player
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
-import java.util.*
 import kotlin.collections.ArrayList
 
 
-class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener {
+class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -44,10 +43,18 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     private lateinit var detailRG: RadioGroup
     private lateinit var playersInLobbyRV: RecyclerView
     private lateinit var adapterPlayers: PlayersDataAdapter
+    private lateinit var adapterMessages: MessagesDataAdapter
     private lateinit var publicRB: RadioButton
     private lateinit var privateRB: RadioButton
     private lateinit var joinButton: Button
     private lateinit var toolbar: MaterialToolbar
+    private lateinit var tabLayout: TabLayout
+    private lateinit var chatRV: RecyclerView
+    private lateinit var chatLL: LinearLayout
+    private lateinit var sendButton: ImageButton
+    private lateinit var messageEDT: EditText
+
+    private lateinit var lobbyData: DocumentSnapshot
 
     private lateinit var currentUser: FirebaseUser
     var creatorUid = ""
@@ -87,13 +94,18 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         privateRB = view.findViewById(R.id.privateDetailRB)
         joinButton = view.findViewById(R.id.joinLobbyButton)
         toolbar = requireActivity().findViewById(R.id.topAppToolbar)
-        setupRecyclerView()
-
+        tabLayout = view.findViewById(R.id.tabLayout)
+        chatRV = view.findViewById(R.id.chatRV)
+        chatLL = view.findViewById(R.id.chatLL)
+        sendButton = view.findViewById(R.id.sendButton)
+        messageEDT = view.findViewById(R.id.messageEDT)
+        setupMessagesRecyclerView()
 
         if(currentLobbyUid != null){
             db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
                 result ->
-                val lobbyData = result.documents[0]
+                lobbyData = result.documents[0]
+                setupPlayersRecyclerView()
                 documentID = lobbyData.id
                 creatorUid = lobbyData["creatorUid"] as String
                 gameNameTxt.text = lobbyData["name"] as String
@@ -108,13 +120,22 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     privateRB.isChecked = true
                 }
                 playersList = lobbyData["players"] as ArrayList<String>
-                val job = CoroutineScope(Dispatchers.Default).launch{loadPlayersInLobbyIntoDataAdapter(playersList)}
-                job.invokeOnCompletion {
-                    CoroutineScope(Dispatchers.Main).launch{adapterPlayers.notifyDataSetChanged()}
+                CoroutineScope(Dispatchers.Default).launch{loadPlayersInLobbyIntoDataAdapter(playersList)}
+                    .invokeOnCompletion {
+                        CoroutineScope(Dispatchers.Main).launch{adapterPlayers.notifyDataSetChanged()}
                 }
+                CoroutineScope(Dispatchers.Default).launch { loadMessagesIntoDataAdapter() }
+                    .invokeOnCompletion {
+                        CoroutineScope(Dispatchers.Main).launch { adapterMessages.notifyDataSetChanged() }
+                    }
                 if(currentUser.uid == creatorUid){
-                    detailRG.visibility = View.VISIBLE
-                    joinButton.visibility = View.INVISIBLE
+                    if(playersList.contains(currentUser.uid)){
+                        detailRG.visibility = View.VISIBLE
+                        joinButton.visibility = View.INVISIBLE
+                    }else{
+                        detailRG.visibility = View.INVISIBLE
+                        joinButton.visibility = View.VISIBLE
+                    }
                 }else{
                     detailRG.visibility = View.INVISIBLE
                     if(playersList.contains(currentUser.uid)){
@@ -125,6 +146,59 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 }
                 setUpMenu()
             }
+        }
+
+        publicRB.setOnCheckedChangeListener { _, isChecked ->
+            db.collection("lobbies").document(documentID).update("public", isChecked)
+        }
+
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                if(tab!=null)
+                    when(tab.position){
+                        0 -> {
+                            playersInLobbyRV.visibility = View.VISIBLE
+                            chatRV.visibility = View.GONE
+                            chatLL.visibility = View.GONE
+                        }
+                        1 -> {
+                            if(isCurrentUserInLobby()){
+                                playersInLobbyRV.visibility = View.INVISIBLE
+                                chatRV.visibility = View.VISIBLE
+                                chatLL.visibility = View.VISIBLE
+                                chatRV.scrollToPosition(adapterMessages.itemCount-1)
+                            }else{
+                                Toast.makeText(requireContext(), "Please join first!", Toast.LENGTH_LONG).show()
+                                tabLayout.getTabAt(0)?.select()
+                            }
+
+                        }
+                    }
+            }
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+            override fun onTabUnselected(tab: TabLayout.Tab?){}
+        })
+
+        sendButton.setOnClickListener {
+            if(messageEDT.text.isNotEmpty())
+                db.collection("users").whereEqualTo("uid", currentUser.uid).get().addOnSuccessListener {
+                    val mes = Message(currentUser.uid,it.documents[0]["name"].toString(),messageEDT.text.toString())
+                    adapterMessages.addItem(mes)
+                    messageEDT.setText("")
+                    chatRV.scrollToPosition(adapterMessages.itemCount-1)
+                    var doc : DocumentSnapshot
+                    db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get().addOnSuccessListener {
+                        result -> doc = result.documents[0]
+                        if(doc["messages"] != null){
+                            val messages = doc["messages"] as ArrayList<Message>
+                            messages.add(mes)
+                            db.collection("chat").document(doc.id).update("messages", messages.toList())
+                        }else{
+                            db.collection("chat").document(doc.id).update("messages", mes)
+                        }
+
+                    }
+                }
         }
 
         joinButton.setOnClickListener {
@@ -182,6 +256,16 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         setUpMenu()
     }
 
+    private fun loadMessagesIntoDataAdapter(){
+        val messages = ArrayList<Message>()
+        val chatDoc = Tasks.await(db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get()).documents[0]
+        val mes = chatDoc["messages"] as ArrayList<HashMap<String, String>>
+        for(message in mes){
+            messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))
+        }
+        adapterMessages.setData(messages)
+    }
+
     private fun loadPlayersInLobbyIntoDataAdapter(uidList: List<String>) {
         val players = ArrayList<Player>()
         for(uid in uidList) {
@@ -194,14 +278,42 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         adapterPlayers.setData(players)
     }
 
+    private fun setupMessagesRecyclerView(){
+        adapterMessages = MessagesDataAdapter(ArrayList())
+        chatRV.adapter = adapterMessages
+        chatRV.layoutManager = LinearLayoutManager(requireContext())
+        chatRV.setHasFixedSize(true)
+    }
 
-    private fun setupRecyclerView(){
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this)
+    private fun setupPlayersRecyclerView(){
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
         playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
         playersInLobbyRV.setHasFixedSize(true)
     }
 
-    override fun onItemClick(position: Int) {
+    override fun onItemClick(uid: String) {
+        val bundle = Bundle()
+        bundle.putString("playerUid", uid)
+        findNavController().navigate(R.id.action_lobbyDetailsFragment_to_profileFragment, bundle)
+    }
+
+    override fun onKickButtonClicked(uid: String) {
+        adapterPlayers.removePlayerByUid(uid)
+        playersList.remove(uid)
+        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
+        npil -= 1
+        numberOfPlayersInLobbyTxt.text = npil.toString()
+        val update = hashMapOf(
+            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
+            "players" to playersList.toList()
+        )
+        db.collection("lobbies").document(documentID).update(update)
+    }
+
+    override fun onChatButtonClicked(uid: String) {
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        findNavController().navigate(R.id.action_global_privateChatFragment, bundle)
     }
 }

@@ -2,10 +2,12 @@ package com.example.football_lobby.adapters
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,16 +25,15 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class LobbiesDataAdapter(
+    private var context: Context,
     private var list: ArrayList<Lobby>,
     private var listener: OnItemClickedListener
     ) : RecyclerView.Adapter<LobbiesDataAdapter.RecyclerViewHolder>(), Filterable{
 
     private val listFull = ArrayList<Lobby>()
-    private var context: Context? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.lobby_item_layout, parent, false)
-        context = parent.context
         return RecyclerViewHolder(itemView)
     }
 
@@ -82,6 +83,9 @@ class LobbiesDataAdapter(
 
     fun setData(list:ArrayList<Lobby>){
         this.list = list
+        if(listFull.isEmpty()){
+            listFull.addAll(list)
+        }
     }
 
     override fun getFilter(): Filter {
@@ -127,7 +131,6 @@ class LobbiesDataAdapter(
             }
             //filter the filtered list by distance
             val filteredByAll = ArrayList<Lobby>()
-
             val geocoder = Geocoder(context, Locale.getDefault())
             if(ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -150,6 +153,7 @@ class LobbiesDataAdapter(
                     }
             }
             results.values = filteredByAll
+            Log.d(TAG, results.values.toString())
             return results
         }
 

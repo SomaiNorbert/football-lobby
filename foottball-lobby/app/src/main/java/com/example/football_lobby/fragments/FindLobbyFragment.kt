@@ -1,6 +1,8 @@
 package com.example.football_lobby.fragments
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -21,7 +23,12 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
@@ -32,7 +39,6 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
     private lateinit var findLobbyByName: EditText
     private lateinit var findLobbyByCreator: EditText
     private lateinit var distanceSlider: Slider
-    private var clickedLobbyUid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +63,8 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         distanceSlider = view.findViewById(R.id.distanceSlider)
         val distTxt = view.findViewById<TextView>(R.id.distanceTxt)
         setupRecyclerView()
-        loadAllLobbiesIntoAdapter()
+        CoroutineScope(Dispatchers.Default).launch { loadAllLobbiesIntoAdapter() }
+            .invokeOnCompletion { CoroutineScope(Dispatchers.Main).launch { filter() } }
 
         distanceSlider.addOnChangeListener { _, value, _ ->
             if (value < 1) {
@@ -69,24 +76,27 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         }
 
         findLobbyByName.doOnTextChanged { _,_,_,_ ->
+            Log.d(TAG, "WTF?")
             filter()
         }
         findLobbyByCreator.doOnTextChanged { _, _, _, _ ->
             filter()
         }
-        //filter() TODO
+
     }
 
     private fun filter() {
+        Log.d(TAG, findLobbyByName.text.toString() + "/" +
+                findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
         adapterLobbies.filter.filter(findLobbyByName.text.toString() + "/" +
                 findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
     }
 
-    private fun loadAllLobbiesIntoAdapter(){
+    private fun loadAllLobbiesIntoAdapter() {
         val list = ArrayList<Lobby>()
-        db.collection("lobbies").get().addOnSuccessListener {
-            result ->
-            for(lobby in result.documents) {
+        val result = Tasks.await(db.collection("lobbies").get())
+        for (lobby in result.documents) {
+            if (lobby["public"] as Boolean)
                 list.add(
                     Lobby(
                         lobby["uid"].toString(),
@@ -101,14 +111,12 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
                         lobby["public"] as Boolean
                     )
                 )
-            }
-            adapterLobbies.setData(list)
-            adapterLobbies.notifyDataSetChanged()
         }
+        adapterLobbies.setData(list)
     }
 
     private fun setupRecyclerView(){
-        adapterLobbies = LobbiesDataAdapter(ArrayList<Lobby>(), this)
+        adapterLobbies = LobbiesDataAdapter(requireContext(), ArrayList<Lobby>(), this)
         foundLobbiesRecyclerView.adapter = adapterLobbies
         foundLobbiesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         foundLobbiesRecyclerView.setHasFixedSize(true)
@@ -116,16 +124,8 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
     override fun onItemClick(uid: String) {
         val bundle = Bundle()
-        clickedLobbyUid = uid
         bundle.putString("lobbyUid", uid)
         findNavController().navigate(R.id.action_global_lobbyDetailsFragment, bundle)
-    }
-
-    fun isPlayerInClickedLobby(): Boolean{
-        val res = Tasks.await(db.collection("lobbies").whereEqualTo("uid", clickedLobbyUid).get())
-        if((res.documents[0]["players"] as List<String>).contains(auth.currentUser!!.uid))
-            return true
-        return false
     }
 
 }

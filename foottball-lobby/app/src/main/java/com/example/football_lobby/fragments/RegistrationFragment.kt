@@ -171,7 +171,8 @@ class RegistrationFragment : Fragment() {
                                     "aboutMe" to aboutMe.text.toString(),
                                     "numberOfGamesPlayed" to 0,
                                     "overallRating" to 0,
-                                    "uid" to auth.uid
+                                    "uid" to auth.uid,
+                                    "friends" to emptyList<String>()
                                 )
                                 auth.currentUser!!.sendEmailVerification()
                                     .addOnCompleteListener { task2 ->
@@ -180,8 +181,11 @@ class RegistrationFragment : Fragment() {
                                         }
                                     }
                                 db.collection("users").add(user)
-                                uploadPhoto(sUri)
-                                findNavController().navigate(R.id.action_registrationFragment_to_findLobbyFragment)
+                                CoroutineScope(Dispatchers.Default).launch { uploadPhoto(sUri)}.invokeOnCompletion {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        findNavController().navigate(R.id.action_registrationFragment_to_findLobbyFragment)
+                                    }
+                                }
                             } else {
                                 Toast.makeText(this.context, "Registration failed.", Toast.LENGTH_SHORT)
                                     .show()

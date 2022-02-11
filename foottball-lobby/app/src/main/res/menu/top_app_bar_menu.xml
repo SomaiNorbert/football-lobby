@@ -22,4 +22,9 @@
             android:id="@+id/leaveLobbyItem"
             android:title="Leave Lobby" />
     </group>
+    <group android:id="@+id/addFriendGroup">
+        <item
+            android:id="@+id/addFriendItem"
+            android:title="Add to Friends" />
+    </group>
 </menu>
