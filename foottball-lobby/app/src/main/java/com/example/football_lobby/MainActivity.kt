@@ -14,21 +14,29 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.example.football_lobby.fragments.FindLobbyFragment
 import com.example.football_lobby.fragments.LobbyDetailsFragment
 import com.example.football_lobby.fragments.ProfileFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationProfile: BottomNavigationView
     private lateinit var bottomNavigationMain: BottomNavigationView
     private lateinit var topAppBar: MaterialToolbar
+    private lateinit var navController:NavController
+    private var quit = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,10 +47,14 @@ class MainActivity : AppCompatActivity() {
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
         bottomNavigationMain = findViewById(R.id.bottomNavigationViewMain)
+
         topAppBar = findViewById(R.id.topAppToolbar)
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController: NavController = navHostFragment.navController
+        navController = navHostFragment.navController
+
+        bottomNavigationMain.setupWithNavController(navController)
+        bottomNavigationProfile.setupWithNavController(navController)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             hideBottomNavigation()
@@ -67,7 +79,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.lobbyDetailsFragment -> {
                     showTopMenu(R.id.inLobbyGroup)
-                    showBottomNavigationMain()
                 }
                 else -> {
                     showBottomNavigationMain()
@@ -111,7 +122,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.deleteProfileItem -> {
                     val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
-                    fragment.deleteUser();
+                    fragment.deleteUser()
                     true
                 }
                 R.id.logOutItem -> {
@@ -136,6 +147,25 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 else -> {false}
+            }
+        }
+    }
+
+    override fun onBackPressed() {
+        when (navController.currentDestination!!.id){
+            R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment -> {
+                if(quit){
+                    finishAndRemoveTask()
+                }else{
+                    quit = true
+                    Toast.makeText(this, "Press again to quit!", Toast.LENGTH_SHORT).show()
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        quit = false
+                    }, 2000)
+                }
+            }
+            else -> {
+                super.onBackPressed()
             }
         }
     }
