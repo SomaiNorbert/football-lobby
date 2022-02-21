@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             showTopNav()
             hideTopMenu()
             when (destination.id) {
-                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment -> {
+                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment, R.id.privateChatFragment -> {
                     hideBottomNavigationTotally()
                 }
                 R.id.startFragment -> {
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.lobbyDetailsFragment -> {
                     showTopMenu(R.id.inLobbyGroup)
+                    hideBottomNavigationTotally()
                 }
                 else -> {
                     showBottomNavigationMain()

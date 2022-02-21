@@ -84,24 +84,17 @@ class PrivateChatFragment : Fragment() {
             }
         }
 
-        val job = CoroutineScope(Dispatchers.Default).launch { loadMessages(toUid) }
-        job.invokeOnCompletion { CoroutineScope(Dispatchers.Main).launch{adapterMessages.notifyDataSetChanged()} }
+        CoroutineScope(Dispatchers.Default).launch { loadMessages(toUid) }
 
         sendPButton.setOnClickListener {
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { resMe ->
-                    Log.d(TAG, job.isActive.toString())
                     val mes = Message(
                         user.uid,
                         resMe.documents[0]["name"].toString(),
                         messagePEDT.text.toString()
                     )
-                    adapterMessages.addItem(mes)
                     messagePEDT.setText("")
-                    privateChatRV.scrollToPosition(adapterMessages.itemCount - 1)
-
-                    Log.d(TAG, "1"+doc.toString())
-                    Log.d(TAG, "2"+doc!!.get("messages").toString())
                     CoroutineScope(Dispatchers.Default).launch {
                         doc = getDoc()
                     }.invokeOnCompletion {
@@ -144,9 +137,7 @@ class PrivateChatFragment : Fragment() {
 
     private fun loadMessages(toUID: String) {
         doc = getDoc()
-        val messages = ArrayList<Message>()
         if (doc == null) {// NO MESSAGES BETWEEN THE TWO USERS YET
-            adapterMessages.setData(messages)
             val privateChat = hashMapOf(
                 "player1UID" to toUID,
                 "player2UID" to user.uid,
@@ -156,10 +147,18 @@ class PrivateChatFragment : Fragment() {
                 CoroutineScope(Dispatchers.Default).launch{doc = Tasks.await(it.get())}
             }
         } else {
-            for (message in doc!!["messages"] as ArrayList<HashMap<String, String>>) {
-                messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString()))
+            doc!!.reference.addSnapshotListener { value, _ ->
+                val messages = ArrayList<Message>()
+                for (message in value!!["messages"] as ArrayList<HashMap<String, String>>) {
+                    messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString()))
+                }
+                if(adapterMessages.itemCount == 0){
+                    adapterMessages.setData(messages)
+                } else{
+                    adapterMessages.addItem(messages.last())
+                }
+                privateChatRV.scrollToPosition(adapterMessages.itemCount - 1)
             }
-            adapterMessages.setData(messages)
         }
     }
 

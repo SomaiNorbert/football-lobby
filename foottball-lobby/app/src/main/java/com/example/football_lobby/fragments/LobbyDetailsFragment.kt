@@ -57,9 +57,10 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     private lateinit var lobbyData: DocumentSnapshot
 
     private lateinit var currentUser: FirebaseUser
-    var creatorUid = ""
-    var documentID = ""
-    var playersList = ArrayList<String>()
+    private var creatorUid = ""
+    private var documentID = ""
+    private var playersList = ArrayList<String>()
+    private var currentLobbyUid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,8 +81,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val currentLobbyUid = arguments?.get("lobbyUid")
-        Log.d(TAG, currentLobbyUid.toString())
+        currentLobbyUid = arguments?.get("lobbyUid").toString()
 
         gameNameTxt = view.findViewById(R.id.gameNameTxt)
         locationDetailTxt = view.findViewById(R.id.locationDetailTxt)
@@ -101,19 +101,23 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         messageEDT = view.findViewById(R.id.messageEDT)
         setupMessagesRecyclerView()
 
-        if(currentLobbyUid != null){
+        if(currentLobbyUid != ""){
+            loadMessagesIntoDataAdapter()
             db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
-                result ->
+                    result ->
                 lobbyData = result.documents[0]
                 setupPlayersRecyclerView()
-                documentID = lobbyData.id
                 creatorUid = lobbyData["creatorUid"] as String
                 gameNameTxt.text = lobbyData["name"] as String
                 locationDetailTxt.text = lobbyData["location"] as String
                 val dt = lobbyData["date"] as String + "  " + lobbyData["time"] as String
                 dateAndTimeTxt.text = dt
-                numberOfPlayersInLobbyTxt.text = lobbyData["numberOfPlayersInLobby"].toString()
                 maximumNumberOfPlayersInLobbyTxt.text = (lobbyData["maximumNumberOfPlayers"].toString().toInt()*2).toString()
+            }
+            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).addSnapshotListener { value, _ ->
+                val lobbyData = value!!.documents[0]
+                documentID = lobbyData.id
+                numberOfPlayersInLobbyTxt.text = lobbyData["numberOfPlayersInLobby"].toString()
                 if(lobbyData["public"] as Boolean){
                     publicRB.isChecked = true
                 }else{
@@ -123,10 +127,6 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 CoroutineScope(Dispatchers.Default).launch{loadPlayersInLobbyIntoDataAdapter(playersList)}
                     .invokeOnCompletion {
                         CoroutineScope(Dispatchers.Main).launch{adapterPlayers.notifyDataSetChanged()}
-                }
-                CoroutineScope(Dispatchers.Default).launch { loadMessagesIntoDataAdapter() }
-                    .invokeOnCompletion {
-                        CoroutineScope(Dispatchers.Main).launch { adapterMessages.notifyDataSetChanged() }
                     }
                 if(currentUser.uid == creatorUid){
                     if(playersList.contains(currentUser.uid)){
@@ -183,9 +183,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             if(messageEDT.text.isNotEmpty())
                 db.collection("users").whereEqualTo("uid", currentUser.uid).get().addOnSuccessListener {
                     val mes = Message(currentUser.uid,it.documents[0]["name"].toString(),messageEDT.text.toString())
-                    adapterMessages.addItem(mes)
                     messageEDT.setText("")
-                    chatRV.scrollToPosition(adapterMessages.itemCount-1)
                     var doc : DocumentSnapshot
                     db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get().addOnSuccessListener {
                         result -> doc = result.documents[0]
@@ -257,13 +255,19 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun loadMessagesIntoDataAdapter(){
-        val messages = ArrayList<Message>()
-        val chatDoc = Tasks.await(db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get()).documents[0]
-        val mes = chatDoc["messages"] as ArrayList<HashMap<String, String>>
-        for(message in mes){
-            messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))
+        db.collection("chat").whereEqualTo("lobbyUid", currentLobbyUid).addSnapshotListener { value, _ ->
+            val mes = value!!.documents[0]["messages"] as ArrayList<HashMap<String, String>>
+            val messages = ArrayList<Message>()
+            for(message in mes){
+                messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))
+            }
+            if(adapterMessages.itemCount == 0){
+                adapterMessages.setData(messages)
+            } else{
+                adapterMessages.addItem(messages.last())
+            }
+            chatRV.scrollToPosition(adapterMessages.itemCount-1)
         }
-        adapterMessages.setData(messages)
     }
 
     private fun loadPlayersInLobbyIntoDataAdapter(uidList: List<String>) {
