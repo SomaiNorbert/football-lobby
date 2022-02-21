@@ -21,6 +21,8 @@ import com.example.football_lobby.models.Lobby
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -132,20 +134,15 @@ class LobbiesDataAdapter(
             //filter the filtered list by distance
             val filteredByAll = ArrayList<Lobby>()
             val geocoder = Geocoder(context, Locale.getDefault())
-            if(ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION)
+            if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-                    val location = Tasks.await(LocationServices.getFusedLocationProviderClient(context!!).lastLocation);
+                    val location = Tasks.await(LocationServices.getFusedLocationProviderClient(context).lastLocation);
                     val myLocation = LatLng(location.latitude, location.longitude)
                     for (lobby in 0 until filteredByNameAndCreator.size) {
-                        val add = geocoder.getFromLocationName(
-                            filteredByNameAndCreator[lobby].location,
-                            1
-                        )[0]
-                        val gameLocation = LatLng(add.latitude, add.longitude)
                         val result = FloatArray(3)
                         Location.distanceBetween(
                             myLocation.latitude, myLocation.longitude,
-                            gameLocation.latitude, gameLocation.longitude, result
+                            filteredByNameAndCreator[lobby].latitude, filteredByNameAndCreator[lobby].longitude, result
                         )
                         if (result[0] / 1000 <= filters[2].toInt()) {
                             filteredByAll.add(filteredByNameAndCreator[lobby])
@@ -153,7 +150,6 @@ class LobbiesDataAdapter(
                     }
             }
             results.values = filteredByAll
-            Log.d(TAG, results.values.toString())
             return results
         }
 

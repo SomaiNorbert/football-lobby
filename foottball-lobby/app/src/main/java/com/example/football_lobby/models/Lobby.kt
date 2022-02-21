@@ -9,5 +9,7 @@ data class Lobby(var uid: String = "",
                  var creatorUid: String = "",
                  var numberOfPlayersInLobby: Int = 0,
                  var maximumNumberOfPlayers: Int = 0,
-                 var public: Boolean = true
+                 var public: Boolean = true,
+                 var latitude: Double = 0.0,
+                 var longitude: Double = 0.0
 )

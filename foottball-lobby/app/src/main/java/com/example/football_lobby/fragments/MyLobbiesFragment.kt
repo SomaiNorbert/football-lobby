@@ -62,7 +62,9 @@ class MyLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
                             lobby["creatorUid"].toString(),
                             lobby["numberOfPlayersInLobby"].toString().toInt(),
                             lobby["maximumNumberOfPlayers"].toString().toInt(),
-                            lobby["public"] as Boolean
+                            lobby["public"] as Boolean,
+                            lobby["latitude"] as Double,
+                            lobby["longitude"] as Double
                         )
                     )
                 }
