@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when (navController.currentDestination!!.id){
-            R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment -> {
+            R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment, R.id.startFragment -> {
                 if(quit){
                     finishAndRemoveTask()
                 }else{
