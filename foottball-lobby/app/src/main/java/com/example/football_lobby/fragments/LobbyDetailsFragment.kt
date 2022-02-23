@@ -57,6 +57,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     private lateinit var sendButton: ImageButton
     private lateinit var messageEDT: EditText
     private lateinit var fab: FloatingActionButton
+    private lateinit var lobbyFullTxt: TextView
 
     private lateinit var lobbyData: DocumentSnapshot
 
@@ -104,6 +105,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         sendButton = view.findViewById(R.id.sendButton)
         messageEDT = view.findViewById(R.id.messageEDT)
         fab = view.findViewById(R.id.floatingActionButton)
+        lobbyFullTxt = view.findViewById(R.id.lobbyFullTxt)
         setupMessagesRecyclerView()
 
         if(currentLobbyUid != ""){
@@ -146,6 +148,12 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                         joinButton.visibility = View.VISIBLE
                     }
                 }
+                lobbyFullTxt.visibility = View.INVISIBLE
+                if(joinButton.visibility == View.VISIBLE)
+                    if(maximumNumberOfPlayersInLobbyTxt.text.toString().toInt() == numberOfPlayersInLobbyTxt.text.toString().toInt()){
+                        joinButton.visibility = View.INVISIBLE
+                        lobbyFullTxt.visibility = View.VISIBLE
+                    }
                 setUpMenu()
             }
         }
@@ -333,7 +341,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             players.add(Player(p["name"].toString(), p["birthday"].toString(),
                 p["overallRating"].toString().toDouble(), uid))
         }
-        adapterPlayers.setData(players)
+        CoroutineScope(Dispatchers.Main).launch { adapterPlayers.setData(players) }
     }
 
     private fun setupMessagesRecyclerView(){
