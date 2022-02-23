@@ -82,7 +82,7 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
 
     private fun loadAllPlayersIntoRV() {
         val list = ArrayList<Player>()
-        val result = Tasks.await(db.collection("users").get())
+        val result = Tasks.await(db.collection("users").orderBy("name_lower").get())
         for(player in result.documents) {
             if(auth.currentUser!!.uid == player["uid"].toString()){
                 continue
@@ -113,7 +113,7 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
     override fun onItemClick(uid: String) {
         val bundle = Bundle()
         bundle.putString("playerUid", uid)
-        findNavController().navigate(R.id.action_myFriendsFragment_to_profileFragment, bundle)
+        findNavController().navigate(R.id.action_findPlayersFragment_to_profileFragment, bundle)
     }
 
     override fun onKickButtonClicked(uid: String){}

@@ -166,6 +166,7 @@ class RegistrationFragment : Fragment() {
                             if (task.isSuccessful) {
                                 val user = hashMapOf(
                                     "name" to name.text.toString(),
+                                    "name_lower" to name.text.toString().lowercase(),
                                     "email" to email.text.toString(),
                                     "birthday" to birthday.text.toString(),
                                     "aboutMe" to aboutMe.text.toString(),
@@ -202,6 +203,7 @@ class RegistrationFragment : Fragment() {
                     }
                     val userData:HashMap<String, Any> = hashMapOf(
                         "name" to name.text.toString(),
+                        "name_lower" to name.text.toString().lowercase(),
                         "email" to email.text.toString(),
                         "birthday" to birthday.text.toString(),
                         "aboutMe" to aboutMe.text.toString(),
