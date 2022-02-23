@@ -27,10 +27,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 
-class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
+class FindLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var adapterLobbies: LobbiesDataAdapter
@@ -51,7 +49,7 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_find_lobby, container, false)
+        return inflater.inflate(R.layout.fragment_find_lobbies, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -76,7 +74,6 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         }
 
         findLobbyByName.doOnTextChanged { _,_,_,_ ->
-            Log.d(TAG, "WTF?")
             filter()
         }
         findLobbyByCreator.doOnTextChanged { _, _, _, _ ->
@@ -86,8 +83,6 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
     }
 
     private fun filter() {
-        Log.d(TAG, findLobbyByName.text.toString() + "/" +
-                findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
         adapterLobbies.filter.filter(findLobbyByName.text.toString() + "/" +
                 findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
     }
@@ -114,7 +109,7 @@ class FindLobbyFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
                     )
                 )
         }
-        adapterLobbies.setData(list)
+        CoroutineScope(Dispatchers.Main).launch { adapterLobbies.setData(list) }
     }
 
     private fun setupRecyclerView(){

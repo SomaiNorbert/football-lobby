@@ -85,9 +85,9 @@ class LobbiesDataAdapter(
 
     fun setData(list:ArrayList<Lobby>){
         this.list = list
-        if(listFull.isEmpty()){
-            listFull.addAll(list)
-        }
+        listFull.clear()
+        listFull.addAll(list)
+        notifyDataSetChanged()
     }
 
     override fun getFilter(): Filter {

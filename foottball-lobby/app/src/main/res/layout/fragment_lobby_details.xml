@@ -115,7 +115,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabLayout"
-        tools:listitem="@layout/players_in_lobby_item_layout" />
+        tools:listitem="@layout/players_item_layout" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRV"

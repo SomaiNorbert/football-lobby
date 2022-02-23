@@ -64,7 +64,6 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
             adapterPlayers.setData(friends)
         }.invokeOnCompletion {
             CoroutineScope(Dispatchers.Main).launch {
-                adapterPlayers.notifyDataSetChanged()
                 if(adapterPlayers.itemCount == 0){
                     noFriendsFoundTxt.visibility = View.VISIBLE
                 }else{
@@ -90,7 +89,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
     override fun onChatButtonClicked(uid: String) {
         val bundle = Bundle()
         bundle.putString("uid", uid)
-        findNavController().navigate(R.id.action_global_privateChatFragment, bundle)
+        findNavController().navigate(R.id.action_myFriendsFragment_to_privateChatFragment, bundle)
     }
 
     override fun onKickButtonClicked(uid: String) {}

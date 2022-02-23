@@ -130,9 +130,6 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 }
                 playersList = lobbyData["players"] as ArrayList<String>
                 CoroutineScope(Dispatchers.Default).launch{loadPlayersInLobbyIntoDataAdapter(playersList)}
-                    .invokeOnCompletion {
-                        CoroutineScope(Dispatchers.Main).launch{adapterPlayers.notifyDataSetChanged()}
-                    }
                 if(currentUser.uid == creatorUid){
                     if(playersList.contains(currentUser.uid)){
                         detailRG.visibility = View.VISIBLE
@@ -366,6 +363,6 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     override fun onChatButtonClicked(uid: String) {
         val bundle = Bundle()
         bundle.putString("uid", uid)
-        findNavController().navigate(R.id.action_global_privateChatFragment, bundle)
+        findNavController().navigate(R.id.action_lobbyDetailsFragment_to_privateChatFragment, bundle)
     }
 }
