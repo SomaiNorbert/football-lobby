@@ -144,18 +144,22 @@ class PrivateChatFragment : Fragment() {
                 "messages" to emptyList<HashMap<String, String>>()
             )
             db.collection("privateChat").add(privateChat).addOnSuccessListener {
-                CoroutineScope(Dispatchers.Default).launch{doc = Tasks.await(it.get())}
+                CoroutineScope(Dispatchers.Default).launch{doc = Tasks.await(it.get()); loadMessages(toUID)}
             }
+            adapterMessages.setData(ArrayList<Message>())
         } else {
             doc!!.reference.addSnapshotListener { value, _ ->
                 val messages = ArrayList<Message>()
                 for (message in value!!["messages"] as ArrayList<HashMap<String, String>>) {
                     messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString()))
+                    Log.d(TAG, "INSIDE FOR")
                 }
+                Log.d(TAG, adapterMessages.itemCount.toString())
+                Log.d(TAG, messages.toString())
                 if(adapterMessages.itemCount == 0){
-                    adapterMessages.setData(messages)
+                    CoroutineScope(Dispatchers.Main).launch { adapterMessages.setData(messages) }
                 } else{
-                    adapterMessages.addItem(messages.last())
+                    CoroutineScope(Dispatchers.Main).launch {adapterMessages.addItem(messages.last()) }
                 }
                 privateChatRV.scrollToPosition(adapterMessages.itemCount - 1)
             }
