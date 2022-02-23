@@ -1,13 +1,9 @@
 package com.example.football_lobby.adapters
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
@@ -23,13 +19,13 @@ class PlayersDataAdapter(
     private var list: ArrayList<Player>,
     private var listener: OnItemClickedListener,
     private var creatorUid: String,
-) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>() {
+) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>(), Filterable {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayersDataAdapter.RecyclerViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.players_in_lobby_item_layout, parent, false)
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.players_item_layout, parent, false)
         return RecyclerViewHolder(itemView)
     }
 
@@ -69,6 +65,7 @@ class PlayersDataAdapter(
 
     fun setData(list: ArrayList<Player>) {
         this.list = list
+        notifyDataSetChanged()
     }
 
     fun addPlayer(player: Player){
@@ -117,5 +114,20 @@ class PlayersDataAdapter(
         fun onItemClick(uid: String)
         fun onKickButtonClicked(uid: String)
         fun onChatButtonClicked(uid: String)
+    }
+
+    override fun getFilter(): Filter {
+        return searchFilter
+    }
+
+    private val searchFilter = object : Filter(){
+        override fun performFiltering(p0: CharSequence?): FilterResults {
+            return FilterResults()
+        }
+
+        override fun publishResults(p0: CharSequence?, p1: FilterResults?) {
+
+        }
+
     }
 }

@@ -1,35 +1,20 @@
 package com.example.football_lobby
 
 import android.Manifest
-import android.content.ContentValues.TAG
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.example.football_lobby.fragments.FindLobbyFragment
 import com.example.football_lobby.fragments.LobbyDetailsFragment
 import com.example.football_lobby.fragments.ProfileFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationProfile: BottomNavigationView
@@ -72,7 +57,8 @@ class MainActivity : AppCompatActivity() {
                     showTopMenu(R.id.profileGroup)
                     showBottomNavigationProfile()
                 }
-                R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment-> {
+                R.id.findLobbiesFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment,
+                R.id.myFriendsFragment, R.id.findPlayersFragment-> {
                     hideTopNav()
                     showTopMenu(R.id.goToProfileGroup)
                     showBottomNavigationMain()
@@ -103,6 +89,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.friendsItem -> {
                     navController.navigate(R.id.action_global_myFriendsFragment)
+                    true
+                }
+                R.id.findPlayerItem -> {
+                    navController.navigate(R.id.action_global_findPlayersFragment)
                     true
                 }
                 else -> {
@@ -154,7 +144,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when (navController.currentDestination!!.id){
-            R.id.findLobbyFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment, R.id.startFragment -> {
+            R.id.findLobbiesFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment, R.id.myFriendsFragment, R.id.startFragment -> {
                 if(quit){
                     finishAndRemoveTask()
                 }else{
