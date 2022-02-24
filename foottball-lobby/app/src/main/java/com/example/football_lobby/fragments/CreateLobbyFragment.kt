@@ -146,7 +146,7 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                             "time" to time.text.toString(),
                             "creatorName" to userName,
                             "creatorUid" to user.uid,
-                            "maximumNumberOfPlayers" to maximumNumberOfPlayers.selectedItem.toString().toInt(),
+                            "maximumNumberOfPlayers" to (maximumNumberOfPlayers.selectedItem.toString().toInt()*2),
                             "numberOfPlayersInLobby" to 1,
                             "public" to public,
                             "players" to listOf(user.uid),

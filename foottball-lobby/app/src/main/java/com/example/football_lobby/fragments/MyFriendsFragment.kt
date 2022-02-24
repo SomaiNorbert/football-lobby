@@ -61,7 +61,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
                         f["overallRating"].toString().toDouble(), f["uid"].toString()))
                 }
             }
-            adapterPlayers.setData(friends)
+            CoroutineScope(Dispatchers.Main).launch { adapterPlayers.setData(friends) }
         }.invokeOnCompletion {
             CoroutineScope(Dispatchers.Main).launch {
                 if(adapterPlayers.itemCount == 0){
@@ -90,6 +90,10 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
         val bundle = Bundle()
         bundle.putString("uid", uid)
         findNavController().navigate(R.id.action_myFriendsFragment_to_privateChatFragment, bundle)
+    }
+
+    override fun onInviteButtonClicked(uid: String) {
+
     }
 
     override fun onKickButtonClicked(uid: String) {}

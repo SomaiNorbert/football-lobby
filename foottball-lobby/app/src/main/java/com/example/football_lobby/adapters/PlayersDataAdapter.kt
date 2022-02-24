@@ -42,12 +42,16 @@ class PlayersDataAdapter(
             Glide.with(holder.itemView.context).load(it).into(holder.profileImg)
         }
         holder.kickFromLobbyButton.visibility = View.GONE
+        holder.inviteToLobbyButton.visibility = View.GONE
         if(auth.currentUser!!.uid == currentItem.uid){
             holder.chatButton.visibility = View.GONE
         }else{
             holder.chatButton.visibility = View.VISIBLE
             if(auth.currentUser!!.uid == creatorUid)
                 holder.kickFromLobbyButton.visibility = View.VISIBLE
+            if(creatorUid == ""){
+                holder.inviteToLobbyButton.visibility = View.VISIBLE
+            }
         }
 
         holder.chatButton.setOnClickListener {
@@ -56,6 +60,10 @@ class PlayersDataAdapter(
 
         holder.kickFromLobbyButton.setOnClickListener {
             listener.onKickButtonClicked(currentItem.uid)
+        }
+
+        holder.inviteToLobbyButton.setOnClickListener {
+            listener.onInviteButtonClicked(currentItem.uid)
         }
     }
 
@@ -94,6 +102,7 @@ class PlayersDataAdapter(
         val profileImg: ImageView = itemView.findViewById(R.id.profileImg)
         val chatButton: Button = itemView.findViewById(R.id.chatButton)
         val kickFromLobbyButton: Button = itemView.findViewById(R.id.kickFromLobbyButton)
+        val inviteToLobbyButton: Button = itemView.findViewById(R.id.inviteToLobbyButton)
 
         init {
             itemView.setOnClickListener(this)
@@ -116,6 +125,7 @@ class PlayersDataAdapter(
         fun onItemClick(uid: String)
         fun onKickButtonClicked(uid: String)
         fun onChatButtonClicked(uid: String)
+        fun onInviteButtonClicked(uid: String)
     }
 
     override fun getFilter(): Filter {

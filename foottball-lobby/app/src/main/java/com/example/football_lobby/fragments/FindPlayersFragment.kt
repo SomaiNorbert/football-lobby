@@ -1,6 +1,8 @@
 package com.example.football_lobby.fragments
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +18,7 @@ import com.example.football_lobby.R
 import com.example.football_lobby.adapters.PlayersDataAdapter
 import com.example.football_lobby.models.Player
 import com.google.android.gms.tasks.Tasks
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -122,6 +125,50 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
         val bundle = Bundle()
         bundle.putString("uid", uid)
         findNavController().navigate(R.id.action_findPlayersFragment_to_privateChatFragment, bundle)
+    }
+
+    override fun onInviteButtonClicked(uid: String) {
+        db.collection("users").whereEqualTo("uid", uid).get().addOnSuccessListener {
+            clicked ->
+            db.collection("lobbies").get().addOnSuccessListener {
+                val myLobbies = ArrayList<String>()
+                val myLobbiesUid = ArrayList<String>()
+                for(lobby in it.documents){
+                    if((lobby["players"] as ArrayList<String>).contains(auth.currentUser!!.uid)){
+                        if(lobby["maximumNumberOfPlayers"].toString().toInt() > lobby["numberOfPlayersInLobby"].toString().toInt()){
+                            if(!(lobby["players"] as ArrayList<String>).contains(uid)){
+                                myLobbies.add(lobby["name"].toString())
+                                myLobbiesUid.add(lobby["uid"].toString())
+                            }
+                        }
+                    }
+                }
+                Log.d(TAG, myLobbies.size.toString())
+                if(myLobbies.size != 0){
+                    var checkedItem = -1
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Invite ${clicked.documents[0]["name"].toString()} to:")
+                        .setNeutralButton("Cancel") { _,_->}
+                        .setPositiveButton("Invite") { _, _ ->
+                            Log.d(TAG, "okbutton:" + checkedItem.toString())
+                            invitePlayerToLobby(uid, myLobbiesUid[checkedItem])
+                        }
+                        .setSingleChoiceItems(myLobbies.toTypedArray(), checkedItem) { _, which ->
+                            checkedItem = which
+                            Log.d(TAG, "OnSelection:" + which.toString())
+                        }
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun invitePlayerToLobby(playerUid:String, lobbyUid: String) {
+        db.collection("lobbies").whereEqualTo("uid", lobbyUid).get().addOnSuccessListener {
+            val players = it.documents[0]["players"] as ArrayList<String>
+            players.add(playerUid)
+            it.documents[0].reference.update("players", players)
+        }
     }
 
 }

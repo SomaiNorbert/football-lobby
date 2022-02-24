@@ -119,41 +119,48 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 locationDetailTxt.text = lobbyData["location"] as String
                 val dt = lobbyData["date"] as String + "  " + lobbyData["time"] as String
                 dateAndTimeTxt.text = dt
-                maximumNumberOfPlayersInLobbyTxt.text = (lobbyData["maximumNumberOfPlayers"].toString().toInt()*2).toString()
             }
             db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).addSnapshotListener { value, _ ->
                 val lobbyData = value!!.documents[0]
                 documentID = lobbyData.id
                 numberOfPlayersInLobbyTxt.text = lobbyData["numberOfPlayersInLobby"].toString()
-                if(lobbyData["public"] as Boolean){
+                maximumNumberOfPlayersInLobbyTxt.text = lobbyData["maximumNumberOfPlayers"].toString()
+                if (lobbyData["public"] as Boolean) {
                     publicRB.isChecked = true
-                }else{
+                } else {
                     privateRB.isChecked = true
                 }
                 playersList = lobbyData["players"] as ArrayList<String>
-                CoroutineScope(Dispatchers.Default).launch{loadPlayersInLobbyIntoDataAdapter(playersList)}
-                if(currentUser.uid == creatorUid){
-                    if(playersList.contains(currentUser.uid)){
+                CoroutineScope(Dispatchers.Default).launch {
+                    loadPlayersInLobbyIntoDataAdapter(
+                        playersList
+                    )
+                }
+                if (currentUser.uid == creatorUid) {
+                    if (playersList.contains(currentUser.uid)) {
                         detailRG.visibility = View.VISIBLE
                         joinButton.visibility = View.INVISIBLE
-                    }else{
+                    } else {
                         detailRG.visibility = View.INVISIBLE
                         joinButton.visibility = View.VISIBLE
                     }
-                }else{
+                } else {
                     detailRG.visibility = View.INVISIBLE
-                    if(playersList.contains(currentUser.uid)){
+                    if (playersList.contains(currentUser.uid)) {
                         joinButton.visibility = View.GONE
-                    }else{
+                    } else {
                         joinButton.visibility = View.VISIBLE
                     }
                 }
                 lobbyFullTxt.visibility = View.INVISIBLE
-                if(joinButton.visibility == View.VISIBLE)
-                    if(maximumNumberOfPlayersInLobbyTxt.text.toString().toInt() == numberOfPlayersInLobbyTxt.text.toString().toInt()){
+                fab.visibility = View.VISIBLE
+                if (maximumNumberOfPlayersInLobbyTxt.text.toString().toInt() == numberOfPlayersInLobbyTxt.text.toString().toInt()) {
+                    if (joinButton.visibility == View.VISIBLE) {
                         joinButton.visibility = View.INVISIBLE
                         lobbyFullTxt.visibility = View.VISIBLE
                     }
+                    fab.visibility = View.INVISIBLE
+                }
                 setUpMenu()
             }
         }
@@ -335,7 +342,6 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     private fun loadPlayersInLobbyIntoDataAdapter(uidList: List<String>) {
         val players = ArrayList<Player>()
         for(uid in uidList) {
-            Log.d(TAG, "1")
             val result = Tasks.await(db.collection("users").whereEqualTo("uid", uid).get())
             val p = result.documents[0]
             players.add(Player(p["name"].toString(), p["birthday"].toString(),
@@ -373,4 +379,6 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         bundle.putString("uid", uid)
         findNavController().navigate(R.id.action_lobbyDetailsFragment_to_privateChatFragment, bundle)
     }
+
+    override fun onInviteButtonClicked(uid: String) {}
 }

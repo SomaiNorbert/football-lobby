@@ -47,7 +47,7 @@ class LobbiesDataAdapter(
         holder.time.text = currentItem.time
         holder.creator.text = currentItem.creatorName
         holder.numberOfPlayersInLobby.text = currentItem.numberOfPlayersInLobby.toString()
-        holder.maximumNumberOfPlayers.text = (currentItem.maximumNumberOfPlayers*2).toString()
+        holder.maximumNumberOfPlayers.text = currentItem.maximumNumberOfPlayers.toString()
     }
 
     override fun getItemCount() = list.size
