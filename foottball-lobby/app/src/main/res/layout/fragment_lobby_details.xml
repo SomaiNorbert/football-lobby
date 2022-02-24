@@ -115,7 +115,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tabLayout"
-        tools:listitem="@layout/players_in_lobby_item_layout" />
+        tools:listitem="@layout/players_item_layout" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRV"
@@ -196,4 +196,26 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_baseline_send_24" />
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:clickable="true"
+        android:src="@drawable/ic_baseline_add_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/lobbyFullTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="The lobby is full! You can not join!"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/joinLobbyButton"
+        app:layout_constraintStart_toStartOf="@+id/joinLobbyButton"
+        app:layout_constraintTop_toTopOf="@+id/joinLobbyButton"
+        app:layout_constraintBottom_toBottomOf="@+id/joinLobbyButton"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

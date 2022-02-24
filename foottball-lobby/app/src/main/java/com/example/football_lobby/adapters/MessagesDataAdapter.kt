@@ -44,6 +44,7 @@ class MessagesDataAdapter(
 
     fun setData(list: ArrayList<Message>) {
         this.list = list
+        notifyDataSetChanged()
     }
 
     fun addItem(item: Message){

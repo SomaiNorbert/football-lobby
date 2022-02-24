@@ -19,7 +19,10 @@ import com.example.football_lobby.models.Message
 import com.example.football_lobby.models.Player
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
+import com.google.api.Distribution
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
@@ -53,13 +56,16 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     private lateinit var chatLL: LinearLayout
     private lateinit var sendButton: ImageButton
     private lateinit var messageEDT: EditText
+    private lateinit var fab: FloatingActionButton
+    private lateinit var lobbyFullTxt: TextView
 
     private lateinit var lobbyData: DocumentSnapshot
 
     private lateinit var currentUser: FirebaseUser
-    var creatorUid = ""
-    var documentID = ""
-    var playersList = ArrayList<String>()
+    private var creatorUid = ""
+    private var documentID = ""
+    private var playersList = ArrayList<String>()
+    private var currentLobbyUid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,8 +86,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val currentLobbyUid = arguments?.get("lobbyUid")
-        Log.d(TAG, currentLobbyUid.toString())
+        currentLobbyUid = arguments?.get("lobbyUid").toString()
 
         gameNameTxt = view.findViewById(R.id.gameNameTxt)
         locationDetailTxt = view.findViewById(R.id.locationDetailTxt)
@@ -99,50 +104,62 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         chatLL = view.findViewById(R.id.chatLL)
         sendButton = view.findViewById(R.id.sendButton)
         messageEDT = view.findViewById(R.id.messageEDT)
+        fab = view.findViewById(R.id.floatingActionButton)
+        lobbyFullTxt = view.findViewById(R.id.lobbyFullTxt)
         setupMessagesRecyclerView()
 
-        if(currentLobbyUid != null){
+        if(currentLobbyUid != ""){
+            loadMessagesIntoDataAdapter()
             db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
-                result ->
+                    result ->
                 lobbyData = result.documents[0]
                 setupPlayersRecyclerView()
-                documentID = lobbyData.id
                 creatorUid = lobbyData["creatorUid"] as String
                 gameNameTxt.text = lobbyData["name"] as String
                 locationDetailTxt.text = lobbyData["location"] as String
                 val dt = lobbyData["date"] as String + "  " + lobbyData["time"] as String
                 dateAndTimeTxt.text = dt
+            }
+            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).addSnapshotListener { value, _ ->
+                val lobbyData = value!!.documents[0]
+                documentID = lobbyData.id
                 numberOfPlayersInLobbyTxt.text = lobbyData["numberOfPlayersInLobby"].toString()
-                maximumNumberOfPlayersInLobbyTxt.text = (lobbyData["maximumNumberOfPlayers"].toString().toInt()*2).toString()
-                if(lobbyData["public"] as Boolean){
+                maximumNumberOfPlayersInLobbyTxt.text = lobbyData["maximumNumberOfPlayers"].toString()
+                if (lobbyData["public"] as Boolean) {
                     publicRB.isChecked = true
-                }else{
+                } else {
                     privateRB.isChecked = true
                 }
                 playersList = lobbyData["players"] as ArrayList<String>
-                CoroutineScope(Dispatchers.Default).launch{loadPlayersInLobbyIntoDataAdapter(playersList)}
-                    .invokeOnCompletion {
-                        CoroutineScope(Dispatchers.Main).launch{adapterPlayers.notifyDataSetChanged()}
+                CoroutineScope(Dispatchers.Default).launch {
+                    loadPlayersInLobbyIntoDataAdapter(
+                        playersList
+                    )
                 }
-                CoroutineScope(Dispatchers.Default).launch { loadMessagesIntoDataAdapter() }
-                    .invokeOnCompletion {
-                        CoroutineScope(Dispatchers.Main).launch { adapterMessages.notifyDataSetChanged() }
-                    }
-                if(currentUser.uid == creatorUid){
-                    if(playersList.contains(currentUser.uid)){
+                if (currentUser.uid == creatorUid) {
+                    if (playersList.contains(currentUser.uid)) {
                         detailRG.visibility = View.VISIBLE
                         joinButton.visibility = View.INVISIBLE
-                    }else{
+                    } else {
                         detailRG.visibility = View.INVISIBLE
                         joinButton.visibility = View.VISIBLE
                     }
-                }else{
+                } else {
                     detailRG.visibility = View.INVISIBLE
-                    if(playersList.contains(currentUser.uid)){
+                    if (playersList.contains(currentUser.uid)) {
                         joinButton.visibility = View.GONE
-                    }else{
+                    } else {
                         joinButton.visibility = View.VISIBLE
                     }
+                }
+                lobbyFullTxt.visibility = View.INVISIBLE
+                fab.visibility = View.VISIBLE
+                if (maximumNumberOfPlayersInLobbyTxt.text.toString().toInt() == numberOfPlayersInLobbyTxt.text.toString().toInt()) {
+                    if (joinButton.visibility == View.VISIBLE) {
+                        joinButton.visibility = View.INVISIBLE
+                        lobbyFullTxt.visibility = View.VISIBLE
+                    }
+                    fab.visibility = View.INVISIBLE
                 }
                 setUpMenu()
             }
@@ -158,12 +175,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     when(tab.position){
                         0 -> {
                             playersInLobbyRV.visibility = View.VISIBLE
+                            fab.visibility = View.VISIBLE
                             chatRV.visibility = View.GONE
                             chatLL.visibility = View.GONE
                         }
                         1 -> {
                             if(isCurrentUserInLobby()){
                                 playersInLobbyRV.visibility = View.INVISIBLE
+                                fab.visibility = View.INVISIBLE
                                 chatRV.visibility = View.VISIBLE
                                 chatLL.visibility = View.VISIBLE
                                 chatRV.scrollToPosition(adapterMessages.itemCount-1)
@@ -183,9 +202,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             if(messageEDT.text.isNotEmpty())
                 db.collection("users").whereEqualTo("uid", currentUser.uid).get().addOnSuccessListener {
                     val mes = Message(currentUser.uid,it.documents[0]["name"].toString(),messageEDT.text.toString())
-                    adapterMessages.addItem(mes)
                     messageEDT.setText("")
-                    chatRV.scrollToPosition(adapterMessages.itemCount-1)
                     var doc : DocumentSnapshot
                     db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get().addOnSuccessListener {
                         result -> doc = result.documents[0]
@@ -208,24 +225,83 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             }else{
                 joinButton.visibility = View.GONE
             }
-
-            playersList.add(currentUser.uid)
-            var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
-            npil += 1
-            numberOfPlayersInLobbyTxt.text = npil.toString()
-            val update = hashMapOf(
-                "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
-                "players" to playersList.toList()
-            )
-            db.collection("lobbies").document(documentID).update(update)
-            db.collection("users").whereEqualTo("uid", currentUser.uid).get().addOnSuccessListener {
-                val playerData = it.documents[0]
-                adapterPlayers.addPlayer(Player(playerData["name"].toString(), playerData["birthday"].toString(),
-                    playerData["overallRating"].toString().toDouble(), currentUser.uid))
-            }
+            addPlayerToLobby(currentUser.uid)
             setUpMenu()
         }
 
+        fab.setOnClickListener {
+            if(isCurrentUserInLobby()){
+                val names = ArrayList<String>()
+                val uids = ArrayList<String>()
+                CoroutineScope(Dispatchers.Default).launch {
+                    val user =
+                        Tasks.await(db.collection("users").whereEqualTo("uid", currentUser.uid).get())
+                    for (friend in user.documents[0]["friends"] as ArrayList<String>) {
+                        val tmp = Tasks.await(db.collection("users").whereEqualTo("uid", friend).get())
+                        names.add(tmp.documents[0]["name"].toString())
+                        uids.add(friend)
+                    }
+                }.invokeOnCompletion {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val list2 = ArrayList<String>()
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle("Invite friends?")
+                            .setNeutralButton("Cancel"){ _, _ -> }
+                            .setPositiveButton("Invite") {_, _ ->
+                                invitePlayers(list2)
+                            }
+                            .setMultiChoiceItems(names.toTypedArray(), BooleanArray(names.size)) { _, which, checked ->
+                                if(checked){
+                                    list2.add(uids[which])
+                                }else{
+                                    list2.remove(uids[which])
+                                }
+                            }
+                            .show()
+                    }
+                }
+            }else{
+                Toast.makeText(requireContext(), "Please join first!", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun invitePlayers(listOfPlayers: ArrayList<String>) {
+        for(playerUid in listOfPlayers){
+            if(!playersList.contains(playerUid)){
+                addPlayerToLobby(playerUid)
+            }
+        }
+    }
+
+    private fun addPlayerToLobby(playerUid: String) {
+        playersList.add(playerUid)
+        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
+        npil += 1
+        numberOfPlayersInLobbyTxt.text = npil.toString()
+        val update = hashMapOf(
+            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
+            "players" to playersList.toList()
+        )
+        db.collection("lobbies").document(documentID).update(update)
+        db.collection("users").whereEqualTo("uid", playerUid).get().addOnSuccessListener {
+            val playerData = it.documents[0]
+            adapterPlayers.addPlayer(Player(playerData["name"].toString(), playerData["birthday"].toString(),
+                playerData["overallRating"].toString().toDouble(), playerUid))
+        }
+    }
+
+    private fun removePlayerFromLobby(playerUid: String){
+        playersList.remove(playerUid)
+        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
+        npil -= 1
+        numberOfPlayersInLobbyTxt.text = npil.toString()
+        val update = hashMapOf(
+            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
+            "players" to playersList.toList()
+        )
+        db.collection("lobbies").document(documentID).update(update)
+        adapterPlayers.removePlayerByUid(playerUid)
     }
 
     private fun isCurrentUserInLobby() : Boolean {
@@ -243,39 +319,35 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             detailRG.visibility = View.INVISIBLE
         }
         joinButton.visibility = View.VISIBLE
-        playersList.remove(currentUser.uid)
-        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
-        npil -= 1
-        numberOfPlayersInLobbyTxt.text = npil.toString()
-        val update = hashMapOf(
-            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
-            "players" to playersList.toList()
-        )
-        db.collection("lobbies").document(documentID).update(update)
-        adapterPlayers.removePlayerByUid(currentUser.uid)
+        removePlayerFromLobby(currentUser.uid)
         setUpMenu()
     }
 
     private fun loadMessagesIntoDataAdapter(){
-        val messages = ArrayList<Message>()
-        val chatDoc = Tasks.await(db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get()).documents[0]
-        val mes = chatDoc["messages"] as ArrayList<HashMap<String, String>>
-        for(message in mes){
-            messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))
+        db.collection("chat").whereEqualTo("lobbyUid", currentLobbyUid).addSnapshotListener { value, _ ->
+            val mes = value!!.documents[0]["messages"] as ArrayList<HashMap<String, String>>
+            val messages = ArrayList<Message>()
+            for(message in mes){
+                messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))
+            }
+            if(adapterMessages.itemCount == 0){
+                adapterMessages.setData(messages)
+            } else{
+                adapterMessages.addItem(messages.last())
+            }
+            chatRV.scrollToPosition(adapterMessages.itemCount-1)
         }
-        adapterMessages.setData(messages)
     }
 
     private fun loadPlayersInLobbyIntoDataAdapter(uidList: List<String>) {
         val players = ArrayList<Player>()
         for(uid in uidList) {
-            Log.d(TAG, "1")
             val result = Tasks.await(db.collection("users").whereEqualTo("uid", uid).get())
             val p = result.documents[0]
             players.add(Player(p["name"].toString(), p["birthday"].toString(),
                 p["overallRating"].toString().toDouble(), uid))
         }
-        adapterPlayers.setData(players)
+        CoroutineScope(Dispatchers.Main).launch { adapterPlayers.setData(players) }
     }
 
     private fun setupMessagesRecyclerView(){
@@ -299,21 +371,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     override fun onKickButtonClicked(uid: String) {
-        adapterPlayers.removePlayerByUid(uid)
-        playersList.remove(uid)
-        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
-        npil -= 1
-        numberOfPlayersInLobbyTxt.text = npil.toString()
-        val update = hashMapOf(
-            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
-            "players" to playersList.toList()
-        )
-        db.collection("lobbies").document(documentID).update(update)
+        removePlayerFromLobby(uid)
     }
 
     override fun onChatButtonClicked(uid: String) {
         val bundle = Bundle()
         bundle.putString("uid", uid)
-        findNavController().navigate(R.id.action_global_privateChatFragment, bundle)
+        findNavController().navigate(R.id.action_lobbyDetailsFragment_to_privateChatFragment, bundle)
     }
+
+    override fun onInviteButtonClicked(uid: String) {}
 }

@@ -10,6 +10,10 @@
         android:icon="@drawable/ic_baseline_library_add_24"
         android:title="Create Lobby" />
     <item
+        android:id="@+id/findPlayerItem"
+        android:icon="@drawable/ic_baseline_person_search_24"
+        android:title="Find Player" />
+    <item
         android:id="@+id/myLobbiesItem"
         android:icon="@drawable/ic_baseline_library_books_24"
         android:title="My Lobbies" />

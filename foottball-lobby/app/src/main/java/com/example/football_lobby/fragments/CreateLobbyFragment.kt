@@ -47,6 +47,8 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
     private lateinit var radioGroup: RadioGroup
     private lateinit var validationErrorsTxt: TextView
     private lateinit var mapFragment:SupportMapFragment
+    private var latitude:Double = 0.0
+    private var longitude:Double = 0.0
     private val validationErrors: ArrayList<String> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,10 +146,12 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                             "time" to time.text.toString(),
                             "creatorName" to userName,
                             "creatorUid" to user.uid,
-                            "maximumNumberOfPlayers" to maximumNumberOfPlayers.selectedItem.toString().toInt(),
+                            "maximumNumberOfPlayers" to (maximumNumberOfPlayers.selectedItem.toString().toInt()*2),
                             "numberOfPlayersInLobby" to 1,
                             "public" to public,
-                            "players" to listOf(user.uid)
+                            "players" to listOf(user.uid),
+                            "longitude" to longitude,
+                            "latitude" to latitude
                         )
                         db.collection("lobbies").add(lobby)
                         db.collection("chat").add(hashMapOf("lobbyUid" to lobbyUid,
@@ -189,13 +193,20 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
         }
         googleMap.setOnCameraIdleListener {
             val address = geocoder.getFromLocation(marker!!.position.latitude, marker!!.position.longitude, 1)[0]
-            marker!!.snippet = address.getAddressLine(0).dropLastWhile { it != ','}.dropLast(1)
+            marker!!.snippet = address.getAddressLine(0)
             marker!!.showInfoWindow()
         }
 
         googleMap.setOnInfoWindowClickListener{
-            location.setText(marker!!.snippet)
-            parentFragmentManager.beginTransaction().remove(mapFragment).commit()
+            if(geocoder.getFromLocationName(marker!!.snippet,1).size != 0){
+                location.setText(marker!!.snippet)
+                longitude = marker!!.position.longitude
+                latitude = marker!!.position.latitude
+                parentFragmentManager.beginTransaction().remove(mapFragment).commit()
+            }else{
+                Toast.makeText(requireContext(), "Wrong Address!", Toast.LENGTH_LONG).show()
+            }
+
         }
 
         googleMap.uiSettings.isZoomControlsEnabled = true

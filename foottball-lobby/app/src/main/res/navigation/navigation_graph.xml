@@ -18,7 +18,7 @@
             app:destination="@id/forgotPasswordFragment" />
         <action
             android:id="@+id/action_loginFragment_to_findLobbyFragment"
-            app:destination="@id/findLobbyFragment" />
+            app:destination="@id/findLobbiesFragment" />
     </fragment>
     <fragment
         android:id="@+id/registrationFragment"
@@ -33,7 +33,7 @@
             app:destination="@id/profileFragment" />
         <action
             android:id="@+id/action_registrationFragment_to_findLobbyFragment"
-            app:destination="@id/findLobbyFragment" />
+            app:destination="@id/findLobbiesFragment" />
     </fragment>
     <fragment
         android:id="@+id/forgotPasswordFragment"
@@ -69,19 +69,19 @@
             app:destination="@id/registrationFragment" />
         <action
             android:id="@+id/action_startFragment_to_findLobbyFragment"
-            app:destination="@id/findLobbyFragment" />
+            app:destination="@id/findLobbiesFragment" />
     </fragment>
     <fragment
-        android:id="@+id/findLobbyFragment"
-        android:name="com.example.football_lobby.fragments.FindLobbyFragment"
+        android:id="@+id/findLobbiesFragment"
+        android:name="com.example.football_lobby.fragments.FindLobbiesFragment"
         android:label="fragment_find_lobby"
-        tools:layout="@layout/fragment_find_lobby" />
+        tools:layout="@layout/fragment_find_lobbies" />
     <action android:id="@+id/action_global_profileFragment" app:destination="@id/profileFragment" />
     <fragment
         android:id="@+id/createLobbyFragment"
         android:name="com.example.football_lobby.fragments.CreateLobbyFragment"
         android:label="fragment_create_lobby"
-        tools:layout="@layout/fragment_create_lobby" /><action android:id="@+id/action_global_createLobbyFragment" app:destination="@id/createLobbyFragment"/><action android:id="@+id/action_global_findLobbyFragment" app:destination="@id/findLobbyFragment"/>
+        tools:layout="@layout/fragment_create_lobby" /><action android:id="@+id/action_global_createLobbyFragment" app:destination="@id/createLobbyFragment"/><action android:id="@+id/action_global_findLobbyFragment" app:destination="@id/findLobbiesFragment"/>
     <fragment
         android:id="@+id/lobbyDetailsFragment"
         android:name="com.example.football_lobby.fragments.LobbyDetailsFragment"
@@ -94,6 +94,9 @@
         <action
             android:id="@+id/action_lobbyDetailsFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_lobbyDetailsFragment_to_privateChatFragment"
+            app:destination="@id/privateChatFragment" />
     </fragment>
     <action android:id="@+id/action_global_lobbyDetailsFragment" app:destination="@id/lobbyDetailsFragment" />
     <fragment
@@ -110,6 +113,9 @@
         <action
             android:id="@+id/action_myFriendsFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_myFriendsFragment_to_privateChatFragment"
+            app:destination="@id/privateChatFragment" />
     </fragment>
     <action android:id="@+id/action_global_myFriendsFragment" app:destination="@id/myFriendsFragment" />
     <fragment
@@ -117,4 +123,17 @@
         android:name="com.example.football_lobby.fragments.PrivateChatFragment"
         android:label="fragment_private_chat"
         tools:layout="@layout/fragment_private_chat" /><action android:id="@+id/action_global_privateChatFragment" app:destination="@id/privateChatFragment"/>
+    <fragment
+        android:id="@+id/findPlayersFragment"
+        android:name="com.example.football_lobby.fragments.FindPlayersFragment"
+        android:label="fragment_find_players"
+        tools:layout="@layout/fragment_find_players" >
+        <action
+            android:id="@+id/action_findPlayersFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_findPlayersFragment_to_privateChatFragment"
+            app:destination="@id/privateChatFragment" />
+    </fragment>
+    <action android:id="@+id/action_global_findPlayersFragment" app:destination="@id/findPlayersFragment" />
 </navigation>
