@@ -1,4 +1,4 @@
-package com.example.football_lobby
+package com.example.football_lobby.retrofit
 
 import com.example.football_lobby.Constants.Companion.CONTENT_TYPE
 import com.example.football_lobby.Constants.Companion.SERVER_KEY

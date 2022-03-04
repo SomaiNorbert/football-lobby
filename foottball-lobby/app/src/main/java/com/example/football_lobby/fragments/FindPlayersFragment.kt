@@ -107,7 +107,7 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
     }
 
     private fun setupRecyclerView() {
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, "")
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, "", "")
         foundPlayersRV.adapter = adapterPlayers
         foundPlayersRV.layoutManager = LinearLayoutManager(requireContext())
         foundPlayersRV.setHasFixedSize(true)
@@ -159,6 +159,10 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
             }
         }
     }
+
+    override fun onAcceptButtonClicked(uid: String, pos: Int) {}
+
+    override fun onDeclineButtonClicked(uid: String) {}
 
     private fun invitePlayerToLobby(playerUid:String, lobbyUid: String) {
         db.collection("lobbies").whereEqualTo("uid", lobbyUid).get().addOnSuccessListener {

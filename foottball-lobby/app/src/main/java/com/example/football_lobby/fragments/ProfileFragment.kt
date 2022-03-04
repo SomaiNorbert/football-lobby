@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
@@ -63,9 +64,9 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         user = auth.currentUser
-        if(user == null){
+        if (user == null) {
             navigateToStartScreen()
-        }else{
+        } else {
 
             profilePic = view.findViewById(R.id.profilePictureImageView)
             name = view.findViewById(R.id.playerNameTxt)
@@ -76,7 +77,7 @@ class ProfileFragment : Fragment() {
             aboutMe = view.findViewById(R.id.aboutMeTxt)
 
             userUid = arguments?.get("playerUid").toString()
-            if(userUid == "" || userUid == "null"){
+            if (userUid == "" || userUid == "null") {
                 userUid = user!!.uid
             }else{
                 val toolbar = requireActivity().findViewById<MaterialToolbar>(R.id.topAppToolbar)
@@ -84,9 +85,12 @@ class ProfileFragment : Fragment() {
                 toolbar.menu.setGroupVisible(R.id.profileGroup, userUid == user!!.uid)
                 toolbar.menu.setGroupVisible(R.id.addFriendGroup, userUid != user!!.uid)
                 db.collection("users").whereEqualTo("uid", user!!.uid).get().addOnSuccessListener {
-                    if(it.documents[0]["friends"] != null && (it.documents[0]["friends"] as ArrayList<String>).contains(userUid)){
+                    if (it.documents[0]["friends"] != null && (it.documents[0]["friends"] as ArrayList<String>).contains(
+                            userUid
+                        )
+                    ) {
                         addFriendSetup(false)
-                    }else{
+                    } else {
                         addFriendSetup(true)
                     }
                 }
@@ -97,23 +101,31 @@ class ProfileFragment : Fragment() {
                     storageRef.child("images/${userUid}").downloadUrl.addOnSuccessListener {
                         Glide.with(requireContext()).load(it).into(profilePic)
                     }
+                    if(userUid != user!!.uid){
+                        addFriendItem.isVisible = true
+                        if (userData["requests"] != null) {
+                            if ((userData["requests"] as ArrayList<String>).contains(auth.currentUser!!.uid)) {
+                                addFriendItem.isVisible = false
+                            }
+                        }
+                    }
                     name.text = userData["name"].toString()
                     playedGames.text = userData["numberOfGamesPlayed"].toString()
-                    if(userData["overallRating"].toString() == "0"){
+                    if (userData["overallRating"].toString() == "0") {
                         overallRating.text = "-"
-                    }else{
+                    } else {
                         overallRating.text = userData["overallRating"].toString() + "/10"
                     }
                     email.text = userData["email"].toString()
                     birthday.text = userData["birthday"].toString()
                     aboutMe.text = userData["aboutMe"].toString()
-            }
+                }
         }
     }
 
     private fun addFriendSetup(b: Boolean) {
         if(b){
-            addFriendItem.title = "Add to Friends"
+            addFriendItem.title = "Send Friend Request"
         }else{
             addFriendItem.title = "Remove from Friends"
         }
@@ -153,20 +165,36 @@ class ProfileFragment : Fragment() {
             db.collection("users").whereEqualTo("uid", userUid).get().addOnSuccessListener { resOtherUser ->
                 otherUser = resOtherUser.documents[0]
                 val myFriends = me["friends"] as ArrayList<String>
+                val requests = ArrayList<String>()
+                if(otherUser["requests"] != null){
+                    requests.addAll(otherUser["requests"] as ArrayList<String>)
+                }
                 val otherUsersFriends = otherUser["friends"] as ArrayList<String>
 
-                if(addFriendItem.title == "Add to Friends"){
-                    myFriends.add(otherUser["uid"].toString())
-                    otherUsersFriends.add(me["uid"].toString())
-                    addFriendSetup(false)
+                if(addFriendItem.title == "Send Friend Request"){
+                    if(!requests.contains(me["uid"].toString())){
+                        requests.add(me["uid"].toString())
+                        addFriendSetup(false)
+                        addFriendItem.isVisible = false
+                        Toast.makeText(requireContext(), "Friend request sent!", Toast.LENGTH_SHORT).show()
+                        val tokens = ArrayList<String>()
+                        if(otherUser["tokens"] != null){
+                            tokens.addAll(otherUser["tokens"] as ArrayList<String>)
+                        }
+                        MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequest(tokens, otherUser["name"].toString())
+                    }
                 }else{
                     myFriends.remove(otherUser["uid"].toString())
                     otherUsersFriends.remove(me["uid"].toString())
                     addFriendSetup(true)
+
                 }
 
                 db.collection("users").document(me.id).update("friends", myFriends)
-                db.collection("users").document(otherUser.id).update("friends", otherUsersFriends)
+                db.collection("users").document(otherUser.id).update(
+                    "friends", otherUsersFriends,
+                    "requests", requests
+                )
             }
         }
     }

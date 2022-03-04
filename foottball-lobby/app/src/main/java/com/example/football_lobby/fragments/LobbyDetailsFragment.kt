@@ -130,7 +130,10 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 } else {
                     privateRB.isChecked = true
                 }
-                playersList = lobbyData["players"] as ArrayList<String>
+                if(lobbyData["requests"] != null) {
+                    playersList.addAll(lobbyData["requests"] as ArrayList<String>)
+                }
+                playersList.addAll(lobbyData["players"] as ArrayList<String>)
                 CoroutineScope(Dispatchers.Default).launch {
                     loadPlayersInLobbyIntoDataAdapter(
                         playersList
@@ -358,7 +361,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun setupPlayersRecyclerView(){
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString())
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString(), lobbyData["uid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
         playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
         playersInLobbyRV.setHasFixedSize(true)
@@ -381,4 +384,12 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     override fun onInviteButtonClicked(uid: String) {}
+
+    override fun onAcceptButtonClicked(uid: String, pos: Int) {
+
+    }
+
+    override fun onDeclineButtonClicked(uid: String) {
+
+    }
 }

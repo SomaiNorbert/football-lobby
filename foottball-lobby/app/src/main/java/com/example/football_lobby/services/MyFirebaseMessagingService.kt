@@ -14,13 +14,11 @@ import androidx.core.app.NotificationCompat
 import androidx.navigation.NavDeepLinkBuilder
 import com.example.football_lobby.MainActivity
 import com.example.football_lobby.R
-import com.example.football_lobby.RetrofitInstance
+import com.example.football_lobby.retrofit.RetrofitInstance
 import com.example.football_lobby.models.NotificationData
-import com.example.football_lobby.models.Player
 import com.example.football_lobby.models.PushNotification
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -1,5 +1,7 @@
 package com.example.football_lobby.adapters
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +12,7 @@ import com.example.football_lobby.R
 import com.example.football_lobby.models.Player
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
@@ -17,6 +20,7 @@ class PlayersDataAdapter(
     private var list: ArrayList<Player>,
     private var listener: OnItemClickedListener,
     private var creatorUid: String,
+    private var UID: String
 ) : RecyclerView.Adapter<PlayersDataAdapter.RecyclerViewHolder>(), Filterable {
 
     private lateinit var auth: FirebaseAuth
@@ -43,16 +47,22 @@ class PlayersDataAdapter(
         }
         holder.kickFromLobbyButton.visibility = View.GONE
         holder.inviteToLobbyButton.visibility = View.GONE
-        if(auth.currentUser!!.uid == currentItem.uid){
-            holder.chatButton.visibility = View.GONE
-        }else{
+        holder.acceptButton.visibility = View.GONE
+        holder.declineButton.visibility = View.GONE
+        holder.chatButton.visibility = View.GONE
+        if(auth.currentUser!!.uid != currentItem.uid){
             holder.chatButton.visibility = View.VISIBLE
             if(auth.currentUser!!.uid == creatorUid)
                 holder.kickFromLobbyButton.visibility = View.VISIBLE
             if(creatorUid == ""){
                 holder.inviteToLobbyButton.visibility = View.VISIBLE
+                setAcceptAndDeclineVisibility(currentItem, holder, "users")
+            }else{
+                setAcceptAndDeclineVisibility(currentItem, holder, "lobbies")
             }
         }
+
+
 
         holder.chatButton.setOnClickListener {
             listener.onChatButtonClicked(currentItem.uid)
@@ -64,6 +74,31 @@ class PlayersDataAdapter(
 
         holder.inviteToLobbyButton.setOnClickListener {
             listener.onInviteButtonClicked(currentItem.uid)
+        }
+
+        holder.acceptButton.setOnClickListener {
+            listener.onAcceptButtonClicked(currentItem.uid, position)
+        }
+
+        holder.declineButton.setOnClickListener {
+            listener.onDeclineButtonClicked(currentItem.uid)
+        }
+    }
+
+    private fun setAcceptAndDeclineVisibility(currentItem: Player, holder: RecyclerViewHolder, collection: String){
+        if(UID.isNotEmpty()){
+            Firebase.firestore.collection(collection).whereEqualTo("uid", UID).get().addOnSuccessListener {
+                var list = ArrayList<String>()
+                if(it.documents[0]["requests"] != null){
+                    list = it.documents[0]["requests"] as ArrayList<String>
+                }
+                Log.d(TAG, list.toString())
+                if(list.contains(currentItem.uid)){
+                    holder.acceptButton.visibility = View.VISIBLE
+                    holder.declineButton.visibility = View.VISIBLE
+                    holder.inviteToLobbyButton.visibility = View.GONE
+                }
+            }
         }
     }
 
@@ -103,6 +138,8 @@ class PlayersDataAdapter(
         val chatButton: Button = itemView.findViewById(R.id.chatButton)
         val kickFromLobbyButton: Button = itemView.findViewById(R.id.kickFromLobbyButton)
         val inviteToLobbyButton: Button = itemView.findViewById(R.id.inviteToLobbyButton)
+        val acceptButton: Button = itemView.findViewById(R.id.acceptButton)
+        val declineButton: Button = itemView.findViewById(R.id.declineButton)
 
         init {
             itemView.setOnClickListener(this)
@@ -126,6 +163,8 @@ class PlayersDataAdapter(
         fun onKickButtonClicked(uid: String)
         fun onChatButtonClicked(uid: String)
         fun onInviteButtonClicked(uid: String)
+        fun onAcceptButtonClicked(uid: String, pos: Int)
+        fun onDeclineButtonClicked(uid: String)
     }
 
     override fun getFilter(): Filter {
