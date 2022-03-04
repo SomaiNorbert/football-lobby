@@ -2,7 +2,6 @@ package com.example.football_lobby.fragments
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,15 +9,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
-import com.example.football_lobby.models.Player
-import com.google.android.gms.tasks.Tasks
+import com.example.football_lobby.services.MyFirebaseMessagingService
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -28,9 +24,6 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -127,8 +120,19 @@ class ProfileFragment : Fragment() {
     }
 
     fun signOut() {
-        auth.signOut()
-        navigateToStartScreen()
+        db.collection("users").whereEqualTo("uid", userUid).get().addOnSuccessListener {
+            if (it.documents[0]["tokens"] != null) {
+                val tokens = it.documents[0]["tokens"] as ArrayList<String>
+                val myToken = MyFirebaseMessagingService().getToken(requireContext())
+                if (myToken != null && myToken.isNotEmpty() && tokens.contains(myToken)){//MyFirebaseInstanceIdService().getToken())) {
+                    tokens.remove(myToken)
+                    it.documents[0].reference.update("tokens", tokens).addOnSuccessListener {
+                        auth.signOut()
+                        navigateToStartScreen()
+                    }
+                }
+            }
+        }
     }
 
     fun deleteUser(){

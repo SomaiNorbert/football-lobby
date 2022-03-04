@@ -121,7 +121,7 @@ class FindLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener
 
     override fun onItemClick(uid: String) {
         val bundle = Bundle()
-        bundle.putString("lobbyUid", uid)
+        bundle.putString("uid", uid)
         findNavController().navigate(R.id.action_global_lobbyDetailsFragment, bundle)
     }
 

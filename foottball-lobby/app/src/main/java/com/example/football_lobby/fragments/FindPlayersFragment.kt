@@ -143,19 +143,16 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
                         }
                     }
                 }
-                Log.d(TAG, myLobbies.size.toString())
                 if(myLobbies.size != 0){
                     var checkedItem = -1
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Invite ${clicked.documents[0]["name"].toString()} to:")
                         .setNeutralButton("Cancel") { _,_->}
                         .setPositiveButton("Invite") { _, _ ->
-                            Log.d(TAG, "okbutton:" + checkedItem.toString())
                             invitePlayerToLobby(uid, myLobbiesUid[checkedItem])
                         }
                         .setSingleChoiceItems(myLobbies.toTypedArray(), checkedItem) { _, which ->
                             checkedItem = which
-                            Log.d(TAG, "OnSelection:" + which.toString())
                         }
                         .show()
                 }

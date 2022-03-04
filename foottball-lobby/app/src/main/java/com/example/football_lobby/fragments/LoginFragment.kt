@@ -1,19 +1,17 @@
 package com.example.football_lobby.fragments
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.football_lobby.R
+import com.example.football_lobby.services.MyFirebaseMessagingService
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class LoginFragment : Fragment() {
@@ -82,12 +80,22 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener{ task ->
                 if (task.isSuccessful) {
+                    Firebase.firestore.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {
+                        var tokens = ArrayList<String>()
+                        if(it.documents[0]["tokens"]!=null){
+                            tokens = it.documents[0]["tokens"] as ArrayList<String>
+                        }
+                        val myToken = MyFirebaseMessagingService().getToken(requireContext())
+                        if (myToken != null && myToken.isNotEmpty() && !tokens.contains(myToken)){
+                            tokens.add(myToken)
+                            it.documents[0].reference.update("tokens", tokens)
+                        }
+                    }
                     findNavController().navigate(R.id.action_loginFragment_to_findLobbyFragment)
                 } else {
                     errorTxt.text = "Email or password is incorrect!"
                     errorTxt.visibility = View.VISIBLE
                     Toast.makeText(this.context, "Authentication failed.", Toast.LENGTH_SHORT).show()
-
                 }
             }
     }

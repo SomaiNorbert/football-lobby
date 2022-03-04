@@ -86,7 +86,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        currentLobbyUid = arguments?.get("lobbyUid").toString()
+        currentLobbyUid = arguments?.get("uid").toString()
 
         gameNameTxt = view.findViewById(R.id.gameNameTxt)
         locationDetailTxt = view.findViewById(R.id.locationDetailTxt)

@@ -1,20 +1,27 @@
 package com.example.football_lobby
 
 import android.Manifest
+import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.example.football_lobby.services.Services
 import com.example.football_lobby.fragments.LobbyDetailsFragment
 import com.example.football_lobby.fragments.ProfileFragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationProfile: BottomNavigationView
@@ -25,10 +32,28 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
         supportActionBar?.hide()
 
         requestPermissions()
+
+        if(Firebase.auth.currentUser != null){
+            Services.checkLobbies()
+            ////////Delete this later TODO
+            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                Firebase.firestore.collection("users").whereEqualTo("uid", Firebase.auth.currentUser!!.uid).get()
+                    .addOnSuccessListener {
+                        val tokens = it.documents[0]["tokens"] as ArrayList<String>
+                        if(!tokens.contains(token)){
+                            tokens.add(token)
+                            it.documents[0].reference.update("tokens", tokens)
+                        }
+                }
+            }
+            ////////
+        }
+
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
         bottomNavigationMain = findViewById(R.id.bottomNavigationViewMain)
