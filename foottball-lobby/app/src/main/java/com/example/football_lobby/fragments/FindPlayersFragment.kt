@@ -107,7 +107,7 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
     }
 
     private fun setupRecyclerView() {
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, "")
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, "", "")
         foundPlayersRV.adapter = adapterPlayers
         foundPlayersRV.layoutManager = LinearLayoutManager(requireContext())
         foundPlayersRV.setHasFixedSize(true)
@@ -143,25 +143,26 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
                         }
                     }
                 }
-                Log.d(TAG, myLobbies.size.toString())
                 if(myLobbies.size != 0){
                     var checkedItem = -1
                     MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Invite ${clicked.documents[0]["name"].toString()} to:")
                         .setNeutralButton("Cancel") { _,_->}
                         .setPositiveButton("Invite") { _, _ ->
-                            Log.d(TAG, "okbutton:" + checkedItem.toString())
                             invitePlayerToLobby(uid, myLobbiesUid[checkedItem])
                         }
                         .setSingleChoiceItems(myLobbies.toTypedArray(), checkedItem) { _, which ->
                             checkedItem = which
-                            Log.d(TAG, "OnSelection:" + which.toString())
                         }
                         .show()
                 }
             }
         }
     }
+
+    override fun onAcceptButtonClicked(uid: String, pos: Int) {}
+
+    override fun onDeclineButtonClicked(uid: String) {}
 
     private fun invitePlayerToLobby(playerUid:String, lobbyUid: String) {
         db.collection("lobbies").whereEqualTo("uid", lobbyUid).get().addOnSuccessListener {

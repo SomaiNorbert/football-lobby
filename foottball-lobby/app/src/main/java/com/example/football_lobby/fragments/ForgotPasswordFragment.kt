@@ -44,13 +44,11 @@ class ForgotPasswordFragment : Fragment() {
         view.findViewById<Button>(R.id.emailMeBtn).setOnClickListener {
             auth.sendPasswordResetEmail(email.text.toString()).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d(TAG, "Email sent!")
                     emailSentTxt.visibility = View.VISIBLE
                     emailSentTxt.text = "Email sent to " + email.text.toString() + " address!"
                     email.setText("")
                     email.clearFocus()
                 }else{
-                    Log.d(TAG, "Error!")
                     emailSentTxt.visibility = View.VISIBLE
                     emailSentTxt.text = "The given email address is not registered or it is incorrect!"
                     email.setText("")

@@ -17,6 +17,8 @@ import com.bumptech.glide.Glide
 import com.example.football_lobby.R
 import com.example.football_lobby.adapters.MessagesDataAdapter
 import com.example.football_lobby.models.Message
+import com.example.football_lobby.models.Player
+import com.example.football_lobby.services.MyFirebaseMessagingService
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -44,6 +46,7 @@ class PrivateChatFragment : Fragment() {
     private lateinit var sendPButton: ImageButton
 
     private lateinit var toUid: String
+    private var toPlayerTokens = ArrayList<String>()
     private var doc: DocumentSnapshot? = null
 
     private lateinit var adapterMessages: MessagesDataAdapter
@@ -82,6 +85,8 @@ class PrivateChatFragment : Fragment() {
             storageRef.child("images/${toUid}").downloadUrl.addOnSuccessListener {
                 Glide.with(this).load(it).into(profileImgPrivate)
             }
+            toPlayerTokens = toUser.documents[0]["tokens"] as ArrayList<String>
+
         }
 
         CoroutineScope(Dispatchers.Default).launch { loadMessages(toUid) }
@@ -94,6 +99,8 @@ class PrivateChatFragment : Fragment() {
                         resMe.documents[0]["name"].toString(),
                         messagePEDT.text.toString()
                     )
+                    val fromName = resMe.documents[0]["name"].toString()
+                    val fromUid = resMe.documents[0]["uid"].toString()
                     messagePEDT.setText("")
                     CoroutineScope(Dispatchers.Default).launch {
                         doc = getDoc()
@@ -105,6 +112,7 @@ class PrivateChatFragment : Fragment() {
                             messages.add(mes)
                             db.collection("privateChat").document(doc!!.id)
                                 .update("messages", messages.toList())
+                            MyFirebaseMessagingService().sendNotificationToPlayerOnMessageReceived(toPlayerTokens, fromName, fromUid)
                         }
                     }
                 }
@@ -146,22 +154,24 @@ class PrivateChatFragment : Fragment() {
             db.collection("privateChat").add(privateChat).addOnSuccessListener {
                 CoroutineScope(Dispatchers.Default).launch{doc = Tasks.await(it.get()); loadMessages(toUID)}
             }
-            adapterMessages.setData(ArrayList<Message>())
+            CoroutineScope(Dispatchers.Main).launch {adapterMessages.setData(ArrayList())}
         } else {
             doc!!.reference.addSnapshotListener { value, _ ->
                 val messages = ArrayList<Message>()
                 for (message in value!!["messages"] as ArrayList<HashMap<String, String>>) {
                     messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString()))
-                    Log.d(TAG, "INSIDE FOR")
                 }
-                Log.d(TAG, adapterMessages.itemCount.toString())
-                Log.d(TAG, messages.toString())
                 if(adapterMessages.itemCount == 0){
-                    CoroutineScope(Dispatchers.Main).launch { adapterMessages.setData(messages) }
+                    CoroutineScope(Dispatchers.Main).launch {
+                        adapterMessages.setData(messages)
+                        privateChatRV.scrollToPosition(adapterMessages.itemCount - 1)
+                    }
                 } else{
-                    CoroutineScope(Dispatchers.Main).launch {adapterMessages.addItem(messages.last()) }
+                    CoroutineScope(Dispatchers.Main).launch {
+                        adapterMessages.addItem(messages.last())
+                        privateChatRV.scrollToPosition(adapterMessages.itemCount - 1)
+                    }
                 }
-                privateChatRV.scrollToPosition(adapterMessages.itemCount - 1)
             }
         }
     }

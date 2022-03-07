@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:text="Invite"
             android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/acceptButton"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/kickFromLobbyButton"
             app:layout_constraintTop_toTopOf="@+id/chatButton" />
@@ -111,5 +111,28 @@
             android:textSize="16sp"
             app:layout_constraintStart_toEndOf="@+id/rating"
             app:layout_constraintTop_toTopOf="@+id/rating" />
+
+        <Button
+            android:id="@+id/acceptButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accept"
+            tools:layout_editor_absoluteX="299dp"
+            app:layout_constraintStart_toEndOf="@+id/inviteToLobbyButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/chatButton"
+            app:layout_constraintBottom_toTopOf="@+id/declineButton"/>
+
+        <Button
+            android:id="@+id/declineButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Decline"
+            tools:layout_editor_absoluteX="297dp"
+            tools:layout_editor_absoluteY="55dp"
+            app:layout_constraintStart_toStartOf="@+id/acceptButton"
+            app:layout_constraintEnd_toEndOf="@+id/acceptButton"
+            app:layout_constraintTop_toBottomOf="@+id/acceptButton"
+            app:layout_constraintBottom_toBottomOf="@+id/chatButton"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

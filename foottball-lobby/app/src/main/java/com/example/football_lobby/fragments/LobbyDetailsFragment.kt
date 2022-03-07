@@ -17,6 +17,7 @@ import com.example.football_lobby.adapters.MessagesDataAdapter
 import com.example.football_lobby.adapters.PlayersDataAdapter
 import com.example.football_lobby.models.Message
 import com.example.football_lobby.models.Player
+import com.example.football_lobby.services.MyFirebaseMessagingService
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -28,6 +29,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
@@ -86,7 +88,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        currentLobbyUid = arguments?.get("lobbyUid").toString()
+        currentLobbyUid = arguments?.get("uid").toString()
 
         gameNameTxt = view.findViewById(R.id.gameNameTxt)
         locationDetailTxt = view.findViewById(R.id.locationDetailTxt)
@@ -121,6 +123,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 dateAndTimeTxt.text = dt
             }
             db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).addSnapshotListener { value, _ ->
+                playersList = ArrayList()
                 val lobbyData = value!!.documents[0]
                 documentID = lobbyData.id
                 numberOfPlayersInLobbyTxt.text = lobbyData["numberOfPlayersInLobby"].toString()
@@ -130,7 +133,10 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 } else {
                     privateRB.isChecked = true
                 }
-                playersList = lobbyData["players"] as ArrayList<String>
+                if(lobbyData["requests"] != null && lobbyData["creatorUid"].toString() == auth.currentUser!!.uid) {
+                    playersList.addAll(lobbyData["requests"] as ArrayList<String>)
+                }
+                playersList.addAll(lobbyData["players"] as ArrayList<String>)
                 CoroutineScope(Dispatchers.Default).launch {
                     loadPlayersInLobbyIntoDataAdapter(
                         playersList
@@ -146,10 +152,15 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     }
                 } else {
                     detailRG.visibility = View.INVISIBLE
-                    if (playersList.contains(currentUser.uid)) {
-                        joinButton.visibility = View.GONE
-                    } else {
-                        joinButton.visibility = View.VISIBLE
+                        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+                                if(it.documents[0]["requests"]!=null &&
+                                    ((it.documents[0]["requests"] as ArrayList<String>).contains(currentUser.uid)) ||
+                                    (it.documents[0]["players"] as ArrayList<String>).contains(currentUser.uid)){
+                                    joinButton.visibility = View.GONE
+                                }
+                                else{
+                                    joinButton.visibility = View.VISIBLE
+                                }
                     }
                 }
                 lobbyFullTxt.visibility = View.INVISIBLE
@@ -213,7 +224,6 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                         }else{
                             db.collection("chat").document(doc.id).update("messages", mes)
                         }
-
                     }
                 }
         }
@@ -225,8 +235,31 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             }else{
                 joinButton.visibility = View.GONE
             }
-            addPlayerToLobby(currentUser.uid)
-            setUpMenu()
+            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+                val requests = ArrayList<String>()
+                if(it.documents[0]["requests"] != null){
+                    requests.addAll(it.documents[0]["requests"] as ArrayList<String>)
+                }
+                requests.add(auth.currentUser!!.uid)
+                it.documents[0].reference.update("requests", requests).addOnSuccessListener {_->
+                    db.collection("users").whereEqualTo("uid", it.documents[0]["creatorUid"].toString())
+                        .get().addOnSuccessListener {owner->
+                            val tokens = ArrayList<String>()
+                            if(owner.documents[0]["tokens"] != null){
+                                tokens.addAll(owner.documents[0]["tokens"] as ArrayList<String>)
+                            }
+                            db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get()
+                                .addOnSuccessListener {me->
+                                    MyFirebaseMessagingService().sendNotificationToOwnerOnJoinRequest(tokens,
+                                        me.documents[0]["name"].toString(), it.documents[0]["name"].toString(), currentLobbyUid)
+                                    Toast.makeText(requireContext(), "Join Request sent!", Toast.LENGTH_SHORT).show()
+                            }
+
+                    }
+                }
+            }
+            //addPlayerToLobby(currentUser.uid)
+            //setUpMenu()
         }
 
         fab.setOnClickListener {
@@ -267,41 +300,58 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun invitePlayers(listOfPlayers: ArrayList<String>) {
-        for(playerUid in listOfPlayers){
-            if(!playersList.contains(playerUid)){
-                addPlayerToLobby(playerUid)
+        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+            val players = ArrayList<String>()
+            if(it.documents[0]["players"] != null)
+                players.addAll(it.documents[0]["players"] as ArrayList<String>)
+            for (playerUid in listOfPlayers) {
+                if (!players.contains(playerUid)) {
+                    addPlayerToLobby(playerUid)
+                }
             }
         }
     }
 
     private fun addPlayerToLobby(playerUid: String) {
-        playersList.add(playerUid)
-        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
-        npil += 1
-        numberOfPlayersInLobbyTxt.text = npil.toString()
-        val update = hashMapOf(
-            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
-            "players" to playersList.toList()
-        )
-        db.collection("lobbies").document(documentID).update(update)
-        db.collection("users").whereEqualTo("uid", playerUid).get().addOnSuccessListener {
-            val playerData = it.documents[0]
-            adapterPlayers.addPlayer(Player(playerData["name"].toString(), playerData["birthday"].toString(),
-                playerData["overallRating"].toString().toDouble(), playerUid))
+        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {lobby->
+            val players = ArrayList<String>()
+            if(lobby.documents[0]["players"] != null)
+                players.addAll(lobby.documents[0]["players"] as ArrayList<String>)
+            players.add(playerUid)
+            var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
+            npil += 1
+            numberOfPlayersInLobbyTxt.text = npil.toString()
+            val update = hashMapOf(
+                "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
+                "players" to players.toList()
+            )
+            db.collection("lobbies").document(documentID).update(update)
+            db.collection("users").whereEqualTo("uid", playerUid).get().addOnSuccessListener {
+                val playerData = it.documents[0]
+                adapterPlayers.addPlayer(Player(playerData["name"].toString(), playerData["birthday"].toString(),
+                    playerData["overallRating"].toString().toDouble(), playerUid))
+            }
         }
+
     }
 
     private fun removePlayerFromLobby(playerUid: String){
-        playersList.remove(playerUid)
-        var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
-        npil -= 1
-        numberOfPlayersInLobbyTxt.text = npil.toString()
-        val update = hashMapOf(
-            "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
-            "players" to playersList.toList()
-        )
-        db.collection("lobbies").document(documentID).update(update)
-        adapterPlayers.removePlayerByUid(playerUid)
+        val players = ArrayList<String>()
+        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+            if(it.documents[0]["players"] != null){
+                players.addAll(it.documents[0]["players"] as ArrayList<String>)
+            }
+            players.remove(playerUid)
+            var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
+            npil -= 1
+            numberOfPlayersInLobbyTxt.text = npil.toString()
+            val update = hashMapOf(
+                "numberOfPlayersInLobby" to numberOfPlayersInLobbyTxt.text.toString().toInt(),
+                "players" to players.toList()
+            )
+            db.collection("lobbies").document(documentID).update(update)
+            adapterPlayers.removePlayerByUid(playerUid)
+        }
     }
 
     private fun isCurrentUserInLobby() : Boolean {
@@ -358,7 +408,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun setupPlayersRecyclerView(){
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString())
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString(), lobbyData["uid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
         playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
         playersInLobbyRV.setHasFixedSize(true)
@@ -381,4 +431,45 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     override fun onInviteButtonClicked(uid: String) {}
+
+    override fun onAcceptButtonClicked(uid: String, pos: Int) {
+        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+            removePlayerFromRequestsByUid(it, uid)
+            adapterPlayers.removePlayerByUid(uid)
+            addPlayerToLobby(uid)
+            val tokens = ArrayList<String>()
+            db.collection("users").whereEqualTo("uid", uid).get().addOnSuccessListener { he->
+                if(he.documents[0]["tokens"] != null){
+                    tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
+                }
+                db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {me->
+                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestAccepted(tokens,
+                        me.documents[0]["name"].toString(), it.documents[0]["name"].toString(), currentLobbyUid)
+                }
+
+            }
+        }
+    }
+
+    override fun onDeclineButtonClicked(uid: String) {
+        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+            removePlayerFromRequestsByUid(it, uid)
+            val tokens = ArrayList<String>()
+            db.collection("users").whereEqualTo("uid", uid).get().addOnSuccessListener { he->
+                if(he.documents[0]["tokens"] != null){
+                    tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
+                }
+                db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {me->
+                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestDenied(tokens,
+                        me.documents[0]["name"].toString(), it.documents[0]["name"].toString())
+                }
+            }
+        }
+    }
+
+    private fun removePlayerFromRequestsByUid(doc: QuerySnapshot, uid: String){
+        val requests = doc.documents[0]["requests"] as ArrayList<String>
+        requests.remove(uid)
+        doc.documents[0].reference.update("requests", requests)
+    }
 }
