@@ -20,18 +20,18 @@ class Services {
                         //lobby.reference.delete()
                         //if(lobby["maximumNumberOfPlayers"] == lobby["numberOfPlayersInLobby"]){
                             //Firebase.firestore.collection("onGoingLobbies").add(lobby.data!!)
-                            Firebase.firestore.collection("users").whereEqualTo("uid", lobby["creatorUid"].toString()).get()
-                                .addOnSuccessListener {
-                                    var tokens = ArrayList<String>()
-                                    if(it.documents[0]["tokens"] != null){
-                                        tokens = it.documents[0]["tokens"] as ArrayList<String>
-                                    }
-                                    MyFirebaseMessagingService().sendNotificationToOwnerOnLobbyDone(
-                                        tokens,
-                                        lobby["name"].toString(),
-                                        lobby["uid"].toString()
-                                    )
-                                }
+//                            Firebase.firestore.collection("users").whereEqualTo("uid", lobby["creatorUid"].toString()).get()
+//                                .addOnSuccessListener {
+//                                    var tokens = ArrayList<String>()
+//                                    if(it.documents[0]["tokens"] != null){
+//                                        tokens = it.documents[0]["tokens"] as ArrayList<String>
+//                                    }
+//                                    MyFirebaseMessagingService().sendNotificationToOwnerOnLobbyDone(
+//                                        tokens,
+//                                        lobby["name"].toString(),
+//                                        lobby["uid"].toString()
+//                                    )
+//                                }
                         //}
                     }
                 }
