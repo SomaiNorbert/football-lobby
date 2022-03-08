@@ -46,10 +46,21 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val bundle = Bundle()
         bundle.putString("uid", remoteMessage.data["uid"])
 
+        Log.d(TAG, remoteMessage.data["destination"].toString())
+        Log.d(TAG, R.id.privateChatFragment.toString())
+
+        val destination = when (remoteMessage.data["destination"]){
+            "privateChat" -> R.id.privateChatFragment
+            "lobbyDetails" -> R.id.lobbyDetailsFragment
+            "myFriends" -> R.id.myFriendsFragment
+            "findPlayers" -> R.id.findPlayersFragment
+            else -> R.id.findLobbiesFragment
+        }
+
         val pendingIntent = NavDeepLinkBuilder(applicationContext)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.navigation_graph)
-            .setDestination(remoteMessage.data["destination"]!!.toInt())
+            .setDestination(destination)
             .setArguments(bundle)
             .createPendingIntent()
 
@@ -98,7 +109,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in ownerTokens){
             PushNotification(
                 NotificationData("Did the game happen?", "We noticed that, your game, $gameName is over. How was it?",
-                    R.id.lobbyDetailsFragment, lobbyUid),
+                    "lobbyDetails", lobbyUid),
                 token
             ).also{
                 sendNotification(it)
@@ -111,7 +122,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PushNotification(
                 NotificationData("How was your game? Rate players",
                     "We noticed that, your game, $gameName ended. Come and rate the players!",
-                R.id.lobbyDetailsFragment, lobbyUid),
+                "lobbyDetails", lobbyUid),
                 token
             ).also {
                 sendNotification(it)
@@ -123,7 +134,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("New Message", "You have a new message from $fromName!",
-                    R.id.privateChatFragment, fromUid),
+                    "privateChat", fromUid),
                 token
             ).also{
                 sendNotification(it)
@@ -135,7 +146,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("New Friend Request", "You have a new pending friend request from $fromName",
-                    R.id.myFriendsFragment),
+                    "myFriends"),
                 token
             ).also{
                 sendNotification(it)
@@ -147,7 +158,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Friend Request Accepted", "$fromName accepted your friend request!",
-                    R.id.myFriendsFragment),
+                    "myFriends"),
                 token
             ).also {
                 sendNotification(it)
@@ -159,7 +170,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Friend Request Denied", "$fromName denied your friend request!",
-                    R.id.findPlayersFragment),
+                    "findPlayers"),
                 token
             ).also{
                 sendNotification(it)
@@ -171,7 +182,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in ownerTokens){
             PushNotification(
                 NotificationData("New Join Lobby Request", "$fromName wants to join your lobby: $lobbyName",
-                    R.id.lobbyDetailsFragment, lobbyUid),
+                    "lobbyDetails", lobbyUid),
                 token
             ).also {
                 sendNotification(it)
@@ -183,7 +194,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Join Request Accepted", "$fromName accepted your request to join the lobby: $lobbyName",
-                    R.id.lobbyDetailsFragment, lobbyUid),
+                    "lobbyDetails", lobbyUid),
                 token
             ).also {
                 sendNotification(it)
@@ -195,7 +206,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Join Request Denied", "$fromName denied your request to join the lobby: $lobbyName",
-                    R.id.findLobbiesFragment),
+                    "findLobbies"),
                 token
             ).also {
                 sendNotification(it)

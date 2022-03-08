@@ -5,6 +5,6 @@ import androidx.annotation.NonNull
 
 data class NotificationData(@NonNull val title: String,
                             @NonNull val message: String,
-                            @NonNull val destination: Int,
+                            @NonNull val destination: String,
                             val uid: String = ""
 )
