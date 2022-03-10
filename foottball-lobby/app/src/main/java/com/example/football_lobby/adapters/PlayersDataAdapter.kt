@@ -89,14 +89,15 @@ class PlayersDataAdapter(
         if(UID.isNotEmpty()){
             Firebase.firestore.collection(collection).whereEqualTo("uid", UID).get().addOnSuccessListener {
                 var list = ArrayList<String>()
+                if(it.documents.size != 0)
                 if(it.documents[0]["requests"] != null){
                     list = it.documents[0]["requests"] as ArrayList<String>
                 }
-                Log.d(TAG, list.toString())
                 if(list.contains(currentItem.uid)){
                     holder.acceptButton.visibility = View.VISIBLE
                     holder.declineButton.visibility = View.VISIBLE
                     holder.inviteToLobbyButton.visibility = View.GONE
+                    holder.kickFromLobbyButton.visibility = View.GONE
                 }
             }
         }

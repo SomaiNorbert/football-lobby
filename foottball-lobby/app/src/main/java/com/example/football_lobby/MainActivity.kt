@@ -52,8 +52,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             ////////
-        }
 
+
+        }
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
         bottomNavigationMain = findViewById(R.id.bottomNavigationViewMain)

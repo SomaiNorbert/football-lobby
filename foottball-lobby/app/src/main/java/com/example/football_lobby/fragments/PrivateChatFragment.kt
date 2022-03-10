@@ -92,6 +92,7 @@ class PrivateChatFragment : Fragment() {
         CoroutineScope(Dispatchers.Default).launch { loadMessages(toUid) }
 
         sendPButton.setOnClickListener {
+            if(messagePEDT.text.isNotEmpty())
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { resMe ->
                     val mes = Message(
@@ -177,7 +178,7 @@ class PrivateChatFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapterMessages = MessagesDataAdapter(ArrayList())
+        adapterMessages = MessagesDataAdapter(ArrayList(), requireContext())
         privateChatRV.adapter = adapterMessages
         privateChatRV.layoutManager = LinearLayoutManager(requireContext())
         privateChatRV.setHasFixedSize(true)

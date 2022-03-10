@@ -16,30 +16,65 @@ class Services {
             CoroutineScope(Dispatchers.Default).launch {
                 val lobbies = Tasks.await(Firebase.firestore.collection("lobbies").get())
                 for(lobby in lobbies.documents){
-                    if(isOld(lobby)){
-                        //lobby.reference.delete()
+                    if(isOld(lobby, Calendar.getInstance())){
                         //if(lobby["maximumNumberOfPlayers"] == lobby["numberOfPlayersInLobby"]){
-                            //Firebase.firestore.collection("onGoingLobbies").add(lobby.data!!)
-//                            Firebase.firestore.collection("users").whereEqualTo("uid", lobby["creatorUid"].toString()).get()
-//                                .addOnSuccessListener {
-//                                    var tokens = ArrayList<String>()
-//                                    if(it.documents[0]["tokens"] != null){
-//                                        tokens = it.documents[0]["tokens"] as ArrayList<String>
-//                                    }
-//                                    MyFirebaseMessagingService().sendNotificationToOwnerOnLobbyDone(
-//                                        tokens,
-//                                        lobby["name"].toString(),
-//                                        lobby["uid"].toString()
-//                                    )
-//                                }
+                            lobby.reference.update("isOnGoing", true)
                         //}
+                        //lobby.reference.delete()
+                    }
+                }
+            }.invokeOnCompletion {
+                checkOldLobbies()
+            }
+        }
+
+        private fun checkOldLobbies(){
+            CoroutineScope(Dispatchers.Default).launch {
+                val onGoingLobbies = Tasks.await(Firebase.firestore.collection("lobbies")
+                    .whereEqualTo("isOnGoing", true).get())
+                for(lobby in onGoingLobbies){
+                    if(isDone(lobby)){
+                        Firebase.firestore.collection("oldLobbies").add(lobby.data)
+                        lobby.reference.delete()
+                        Firebase.firestore.collection("users").whereEqualTo("uid", lobby["creatorUid"].toString()).get()
+                            .addOnSuccessListener {
+                                var tokens = ArrayList<String>()
+                                if(it.documents[0]["tokens"] != null){
+                                    tokens = it.documents[0]["tokens"] as ArrayList<String>
+                                }
+                                MyFirebaseMessagingService().sendNotificationToOwnerOnLobbyDone(
+                                    tokens,
+                                    lobby["name"].toString(),
+                                    lobby["uid"].toString()
+                                )
+                            }
+                    }
+                }
+            }.invokeOnCompletion {
+                archiveLobbies()
+            }
+        }
+
+        private fun archiveLobbies(){
+            CoroutineScope(Dispatchers.Default).launch {
+                val oldLobbies = Tasks.await(Firebase.firestore.collection("oldLobbies").get())
+                for(lobby in oldLobbies){
+                    if(lobby["playersResponded"] != null)
+                    if((lobby["playersResponded"]as ArrayList<String>).size == lobby["maximumNumberOfPlayers"].toString().toInt()){
+                        Firebase.firestore.collection("lobbyArchive").add(lobby.data)
+                        lobby.reference.delete()
                     }
                 }
             }
         }
 
-        private fun isOld(lobby: DocumentSnapshot) : Boolean {
+        private fun isDone(lobby: DocumentSnapshot): Boolean {
             val currentCalendar = Calendar.getInstance()
+            currentCalendar.add(Calendar.HOUR_OF_DAY, 1)
+            return isOld(lobby, currentCalendar)
+        }
+
+        private fun isOld(lobby: DocumentSnapshot, currentCalendar: Calendar) : Boolean {
             val lobbyCalendar = Calendar.getInstance()
             val date:List<String> = lobby["date"].toString().split("/")
             val time:List<String> = lobby["time"].toString().split(":")
