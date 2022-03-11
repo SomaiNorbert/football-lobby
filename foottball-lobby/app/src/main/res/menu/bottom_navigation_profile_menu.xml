@@ -7,7 +7,4 @@
     <item
         android:id="@+id/myRatingsItem"
         android:title="My Ratings" />
-    <item
-        android:id="@+id/givenRatingsItem"
-        android:title="Given Ratings" />
 </menu>

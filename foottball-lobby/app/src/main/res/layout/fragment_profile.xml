@@ -46,7 +46,7 @@
         android:id="@+id/ratingTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rating: 10/10"
+        android:text="Rating: 5/5"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@+id/profilePictureImageView"
         app:layout_constraintEnd_toEndOf="@+id/playerNameTxt"
@@ -92,5 +92,30 @@
         app:layout_constraintEnd_toEndOf="@+id/birthdayTxt"
         app:layout_constraintStart_toStartOf="@+id/birthdayTxt"
         app:layout_constraintTop_toBottomOf="@+id/birthdayTxt" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/myRatingsRV"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profilePictureImageView"
+        tools:listitem="@layout/rating_item_layout">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/groupAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="emailTxt,aboutMeTxt,birthdayTxt"
+        tools:layout_editor_absoluteX="10dp"
+        tools:layout_editor_absoluteY="160dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

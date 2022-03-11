@@ -1,5 +1,6 @@
 package com.example.football_lobby.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 
 class MessagesDataAdapter(
     private var list: ArrayList<Message>,
+    private var context: Context
     ) : RecyclerView.Adapter<MessagesDataAdapter.RecyclerViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessagesDataAdapter.RecyclerViewHolder {
@@ -36,7 +38,7 @@ class MessagesDataAdapter(
         val storageRef = Firebase.storage.reference
         Glide.with(holder.itemView.context).load(R.drawable.profile_avatar).into(holder.senderImageView)
         storageRef.child("images/${currentItem.senderUid}").downloadUrl.addOnSuccessListener {
-            Glide.with(holder.itemView.context).load(it).into(holder.senderImageView)
+            Glide.with(context).load(it).into(holder.senderImageView)
         }
     }
 

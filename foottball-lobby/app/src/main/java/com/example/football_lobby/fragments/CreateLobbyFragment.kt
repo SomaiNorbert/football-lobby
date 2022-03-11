@@ -151,7 +151,8 @@ class CreateLobbyFragment : Fragment(), OnMapReadyCallback {
                             "public" to public,
                             "players" to listOf(user.uid),
                             "longitude" to longitude,
-                            "latitude" to latitude
+                            "latitude" to latitude,
+                            "isOnGoing" to false
                         )
                         db.collection("lobbies").add(lobby)
                         db.collection("chat").add(hashMapOf("lobbyUid" to lobbyUid,

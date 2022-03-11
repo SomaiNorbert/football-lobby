@@ -46,11 +46,14 @@ class MyLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         noLobbiesFoundTxt = view.findViewById(R.id.noLobbyFoundMyLobbiesTxt)
 
         setupRecyclerView()
-
-        db.collection("lobbies").get().addOnSuccessListener {
-            val list = ArrayList<Lobby>()
+        val list = ArrayList<Lobby>()
+        db.collection("oldLobbies").get().addOnSuccessListener {
             for(lobby in it.documents){
-                if((lobby["players"] as ArrayList<String>).contains(Firebase.auth.currentUser!!.uid)){
+                if ((lobby["creatorUid"].toString() == Firebase.auth.currentUser!!.uid ||
+                            !(lobby["isOnGoing"] as Boolean) ||
+                            ((lobby["isOnGoing"] as Boolean) && (lobby["ownerResponded"] != null)))
+                    && (lobby["playersResponded"] == null || !(lobby["playersResponded"] as ArrayList<String>)
+                        .contains(Firebase.auth.currentUser!!.uid))) {
                     list.add(
                         Lobby(
                             lobby["uid"].toString(),
@@ -69,11 +72,33 @@ class MyLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
                     )
                 }
             }
-            adapterLobbies.setData(list)
-            if(list.size == 0){
-                noLobbiesFoundTxt.visibility = View.VISIBLE
-            }else{
-                noLobbiesFoundTxt.visibility = View.INVISIBLE
+            db.collection("lobbies").get().addOnSuccessListener {it2->
+                for (lobby in it2.documents) {
+                    if ((lobby["players"] as ArrayList<String>).contains(Firebase.auth.currentUser!!.uid)) {
+                        list.add(
+                            Lobby(
+                                lobby["uid"].toString(),
+                                lobby["name"].toString(),
+                                lobby["location"].toString(),
+                                lobby["date"].toString(),
+                                lobby["time"].toString(),
+                                lobby["creatorName"].toString(),
+                                lobby["creatorUid"].toString(),
+                                lobby["numberOfPlayersInLobby"].toString().toInt(),
+                                lobby["maximumNumberOfPlayers"].toString().toInt(),
+                                lobby["public"] as Boolean,
+                                lobby["latitude"] as Double,
+                                lobby["longitude"] as Double
+                            )
+                        )
+                    }
+                }
+                adapterLobbies.setData(list)
+                if (list.size == 0) {
+                    noLobbiesFoundTxt.visibility = View.VISIBLE
+                } else {
+                    noLobbiesFoundTxt.visibility = View.INVISIBLE
+                }
             }
         }
     }

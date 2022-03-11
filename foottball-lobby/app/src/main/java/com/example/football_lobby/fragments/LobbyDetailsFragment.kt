@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -109,193 +110,325 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         fab = view.findViewById(R.id.floatingActionButton)
         lobbyFullTxt = view.findViewById(R.id.lobbyFullTxt)
         setupMessagesRecyclerView()
+        var collection = "lobbies"
+        if (currentLobbyUid != "") {
 
-        if(currentLobbyUid != ""){
-            loadMessagesIntoDataAdapter()
-            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
-                    result ->
-                lobbyData = result.documents[0]
-                setupPlayersRecyclerView()
-                creatorUid = lobbyData["creatorUid"] as String
-                gameNameTxt.text = lobbyData["name"] as String
-                locationDetailTxt.text = lobbyData["location"] as String
-                val dt = lobbyData["date"] as String + "  " + lobbyData["time"] as String
-                dateAndTimeTxt.text = dt
+            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get()
+                .addOnSuccessListener { result ->
+                    if (result.documents.size == 0) {
+                        isOld()
+                        collection = "oldLobbies"
+                    }
+                    Log.d(TAG, collection)
+                    loadMessagesIntoDataAdapter()
+                    db.collection(collection).whereEqualTo("uid", currentLobbyUid)
+                        .addSnapshotListener { value, _ ->
+                            if(value!!.documents.size != 0){
+                                lobbyData = value.documents[0]
+                                setupPlayersRecyclerView()
+                                creatorUid = lobbyData["creatorUid"] as String
+                                gameNameTxt.text = lobbyData["name"] as String
+                                locationDetailTxt.text = lobbyData["location"] as String
+                                val dt =
+                                    lobbyData["date"] as String + "  " + lobbyData["time"] as String
+                                dateAndTimeTxt.text = dt
+                                playersList = ArrayList()
+                                val lobbyData = value.documents[0]
+                                documentID = lobbyData.id
+                                numberOfPlayersInLobbyTxt.text =
+                                    lobbyData["numberOfPlayersInLobby"].toString()
+                                maximumNumberOfPlayersInLobbyTxt.text =
+                                    lobbyData["maximumNumberOfPlayers"].toString()
+                                if (lobbyData["public"] as Boolean) {
+                                    publicRB.isChecked = true
+                                } else {
+                                    privateRB.isChecked = true
+                                }
+                                if (lobbyData["requests"] != null && lobbyData["creatorUid"].toString() == auth.currentUser!!.uid) {
+                                    playersList.addAll(lobbyData["requests"] as ArrayList<String>)
+                                }
+                                playersList.addAll(lobbyData["players"] as ArrayList<String>)
+                                CoroutineScope(Dispatchers.Default).launch {
+                                    loadPlayersInLobbyIntoDataAdapter(
+                                        playersList
+                                    )
+                                }
+                                if (currentUser.uid == creatorUid) {
+                                    if (playersList.contains(currentUser.uid)) {
+                                        detailRG.visibility = View.VISIBLE
+                                        joinButton.visibility = View.INVISIBLE
+                                    } else {
+                                        detailRG.visibility = View.INVISIBLE
+                                        joinButton.visibility = View.VISIBLE
+                                    }
+                                } else {
+                                    detailRG.visibility = View.INVISIBLE
+                                    db.collection("lobbies").whereEqualTo("uid", currentLobbyUid)
+                                        .get()
+                                        .addOnSuccessListener {
+                                            if (it.documents[0]["requests"] != null &&
+                                                ((it.documents[0]["requests"] as ArrayList<String>).contains(
+                                                    currentUser.uid
+                                                )) ||
+                                                (it.documents[0]["players"] as ArrayList<String>).contains(
+                                                    currentUser.uid
+                                                )
+                                            ) {
+                                                joinButton.visibility = View.GONE
+                                            } else {
+                                                joinButton.visibility = View.VISIBLE
+                                            }
+                                        }
+                                }
+                                lobbyFullTxt.visibility = View.INVISIBLE
+                                fab.visibility = View.VISIBLE
+                                if (maximumNumberOfPlayersInLobbyTxt.text.toString()
+                                        .toInt() == numberOfPlayersInLobbyTxt.text.toString()
+                                        .toInt()
+                                ) {
+                                    if (joinButton.visibility == View.VISIBLE) {
+                                        joinButton.visibility = View.INVISIBLE
+                                        lobbyFullTxt.visibility = View.VISIBLE
+                                    }
+                                    fab.visibility = View.INVISIBLE
+                                }
+                                setUpMenu()
+                            }
+
+                        }
+                }
+
+            publicRB.setOnCheckedChangeListener { _, isChecked ->
+                db.collection("lobbies").document(documentID).update("public", isChecked)
             }
-            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).addSnapshotListener { value, _ ->
-                playersList = ArrayList()
-                val lobbyData = value!!.documents[0]
-                documentID = lobbyData.id
-                numberOfPlayersInLobbyTxt.text = lobbyData["numberOfPlayersInLobby"].toString()
-                maximumNumberOfPlayersInLobbyTxt.text = lobbyData["maximumNumberOfPlayers"].toString()
-                if (lobbyData["public"] as Boolean) {
-                    publicRB.isChecked = true
-                } else {
-                    privateRB.isChecked = true
+
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    if (tab != null)
+                        when (tab.position) {
+                            0 -> {
+                                playersInLobbyRV.visibility = View.VISIBLE
+                                fab.visibility = View.VISIBLE
+                                chatRV.visibility = View.GONE
+                                chatLL.visibility = View.GONE
+                            }
+                            1 -> {
+                                if (isCurrentUserInLobby()) {
+                                    playersInLobbyRV.visibility = View.INVISIBLE
+                                    fab.visibility = View.INVISIBLE
+                                    chatRV.visibility = View.VISIBLE
+                                    chatLL.visibility = View.VISIBLE
+                                    chatRV.scrollToPosition(adapterMessages.itemCount - 1)
+                                } else {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Please join first!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    tabLayout.getTabAt(0)?.select()
+                                }
+
+                            }
+                        }
                 }
-                if(lobbyData["requests"] != null && lobbyData["creatorUid"].toString() == auth.currentUser!!.uid) {
-                    playersList.addAll(lobbyData["requests"] as ArrayList<String>)
-                }
-                playersList.addAll(lobbyData["players"] as ArrayList<String>)
-                CoroutineScope(Dispatchers.Default).launch {
-                    loadPlayersInLobbyIntoDataAdapter(
-                        playersList
-                    )
-                }
+
+                override fun onTabReselected(tab: TabLayout.Tab?) {}
+                override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            })
+
+            sendButton.setOnClickListener {
+                if (messageEDT.text.isNotEmpty())
+                    db.collection("users").whereEqualTo("uid", currentUser.uid).get()
+                        .addOnSuccessListener {
+                            val mes = Message(
+                                currentUser.uid,
+                                it.documents[0]["name"].toString(),
+                                messageEDT.text.toString()
+                            )
+                            messageEDT.setText("")
+                            var doc: DocumentSnapshot
+                            db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"])
+                                .get()
+                                .addOnSuccessListener { result ->
+                                    doc = result.documents[0]
+                                    if (doc["messages"] != null) {
+                                        val messages = doc["messages"] as ArrayList<Message>
+                                        messages.add(mes)
+                                        db.collection("chat").document(doc.id)
+                                            .update("messages", messages.toList())
+                                    } else {
+                                        db.collection("chat").document(doc.id)
+                                            .update("messages", mes)
+                                    }
+                                }
+                        }
+            }
+
+            joinButton.setOnClickListener {
                 if (currentUser.uid == creatorUid) {
-                    if (playersList.contains(currentUser.uid)) {
-                        detailRG.visibility = View.VISIBLE
-                        joinButton.visibility = View.INVISIBLE
-                    } else {
-                        detailRG.visibility = View.INVISIBLE
-                        joinButton.visibility = View.VISIBLE
+                    detailRG.visibility = View.VISIBLE
+                    joinButton.visibility = View.INVISIBLE
+                } else {
+                    joinButton.visibility = View.GONE
+                }
+                db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get()
+                    .addOnSuccessListener {
+                        val requests = ArrayList<String>()
+                        if (it.documents[0]["requests"] != null) {
+                            requests.addAll(it.documents[0]["requests"] as ArrayList<String>)
+                        }
+                        requests.add(auth.currentUser!!.uid)
+                        it.documents[0].reference.update("requests", requests)
+                            .addOnSuccessListener { _ ->
+                                db.collection("users")
+                                    .whereEqualTo(
+                                        "uid",
+                                        it.documents[0]["creatorUid"].toString()
+                                    )
+                                    .get().addOnSuccessListener { owner ->
+                                        val tokens = ArrayList<String>()
+                                        if (owner.documents[0]["tokens"] != null) {
+                                            tokens.addAll(owner.documents[0]["tokens"] as ArrayList<String>)
+                                        }
+                                        db.collection("users")
+                                            .whereEqualTo("uid", auth.currentUser!!.uid)
+                                            .get()
+                                            .addOnSuccessListener { me ->
+                                                MyFirebaseMessagingService().sendNotificationToOwnerOnJoinRequest(
+                                                    tokens,
+                                                    me.documents[0]["name"].toString(),
+                                                    it.documents[0]["name"].toString(),
+                                                    currentLobbyUid
+                                                )
+                                                Toast.makeText(
+                                                    requireContext(),
+                                                    "Join Request sent!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+
+                                    }
+                            }
+                    }
+            }
+
+            fab.setOnClickListener {
+                if (isCurrentUserInLobby()) {
+                    val names = ArrayList<String>()
+                    val uids = ArrayList<String>()
+                    CoroutineScope(Dispatchers.Default).launch {
+                        val user =
+                            Tasks.await(
+                                db.collection("users").whereEqualTo("uid", currentUser.uid)
+                                    .get()
+                            )
+                        for (friend in user.documents[0]["friends"] as ArrayList<String>) {
+                            val tmp = Tasks.await(
+                                db.collection("users").whereEqualTo("uid", friend).get()
+                            )
+                            names.add(tmp.documents[0]["name"].toString())
+                            uids.add(friend)
+                        }
+                    }.invokeOnCompletion {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val list2 = ArrayList<String>()
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setTitle("Add friends to lobby?")
+                                .setNeutralButton("Cancel") { _, _ -> }
+                                .setPositiveButton("Invite") { _, _ ->
+                                    invitePlayers(list2)
+                                }
+                                .setMultiChoiceItems(
+                                    names.toTypedArray(),
+                                    BooleanArray(names.size)
+                                ) { _, which, checked ->
+                                    if (checked) {
+                                        list2.add(uids[which])
+                                    } else {
+                                        list2.remove(uids[which])
+                                    }
+                                }
+                                .show()
+                        }
                     }
                 } else {
-                    detailRG.visibility = View.INVISIBLE
-                        db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
-                                if(it.documents[0]["requests"]!=null &&
-                                    ((it.documents[0]["requests"] as ArrayList<String>).contains(currentUser.uid)) ||
-                                    (it.documents[0]["players"] as ArrayList<String>).contains(currentUser.uid)){
-                                    joinButton.visibility = View.GONE
-                                }
-                                else{
-                                    joinButton.visibility = View.VISIBLE
-                                }
-                    }
+                    Toast.makeText(
+                        requireContext(),
+                        "Please join first!",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
-                lobbyFullTxt.visibility = View.INVISIBLE
-                fab.visibility = View.VISIBLE
-                if (maximumNumberOfPlayersInLobbyTxt.text.toString().toInt() == numberOfPlayersInLobbyTxt.text.toString().toInt()) {
-                    if (joinButton.visibility == View.VISIBLE) {
-                        joinButton.visibility = View.INVISIBLE
-                        lobbyFullTxt.visibility = View.VISIBLE
-                    }
-                    fab.visibility = View.INVISIBLE
-                }
-                setUpMenu()
             }
         }
 
-        publicRB.setOnCheckedChangeListener { _, isChecked ->
-            db.collection("lobbies").document(documentID).update("public", isChecked)
-        }
+    }
 
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                if(tab!=null)
-                    when(tab.position){
-                        0 -> {
-                            playersInLobbyRV.visibility = View.VISIBLE
-                            fab.visibility = View.VISIBLE
-                            chatRV.visibility = View.GONE
-                            chatLL.visibility = View.GONE
-                        }
-                        1 -> {
-                            if(isCurrentUserInLobby()){
-                                playersInLobbyRV.visibility = View.INVISIBLE
-                                fab.visibility = View.INVISIBLE
-                                chatRV.visibility = View.VISIBLE
-                                chatLL.visibility = View.VISIBLE
-                                chatRV.scrollToPosition(adapterMessages.itemCount-1)
-                            }else{
-                                Toast.makeText(requireContext(), "Please join first!", Toast.LENGTH_LONG).show()
-                                tabLayout.getTabAt(0)?.select()
+    private fun isOld(){
+        db.collection("oldLobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
+            val doc = it.documents[0]
+            if(doc["creatorUid"].toString() == auth.currentUser!!.uid && it.documents[0]["ownerResponded"] == null){
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Did the game happen?")
+                    .setMessage("We noticed that your game is over. Did it happen?")
+                    .setCancelable(false)
+                    .setNegativeButton("No") { _, _ ->
+                        doc.reference.delete()
+                        requireActivity().onBackPressed()
+                    }
+                    .setPositiveButton("Yes") { _, _ ->
+                        doc.reference.update("ownerResponded", true).addOnSuccessListener {_->
+                            db.collection("oldLobbies").document(it.documents[0].id).get().addOnSuccessListener {res->
+                                ownerResponded(res)
                             }
-
+                        }
+                        CoroutineScope(Dispatchers.Default).launch {
+                            for(playerUid in it.documents[0]["players"] as ArrayList<String>){
+                                if(playerUid == auth.currentUser!!.uid)
+                                    continue
+                                db.collection("users").whereEqualTo("uid", playerUid).get()
+                                    .addOnSuccessListener { player->
+                                        val tokens = ArrayList<String>()
+                                        if(player.documents[0]["tokens"] != null){
+                                            tokens.addAll(player.documents[0]["tokens"] as ArrayList<String>)
+                                        }
+                                        MyFirebaseMessagingService().sendNotificationToPlayersOnLobbyDone(tokens,
+                                            it.documents[0]["name"].toString(), it.documents[0]["uid"].toString())
+                                }
+                            }
                         }
                     }
-            }
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-            override fun onTabUnselected(tab: TabLayout.Tab?){}
-        })
-
-        sendButton.setOnClickListener {
-            if(messageEDT.text.isNotEmpty())
-                db.collection("users").whereEqualTo("uid", currentUser.uid).get().addOnSuccessListener {
-                    val mes = Message(currentUser.uid,it.documents[0]["name"].toString(),messageEDT.text.toString())
-                    messageEDT.setText("")
-                    var doc : DocumentSnapshot
-                    db.collection("chat").whereEqualTo("lobbyUid", lobbyData["uid"]).get().addOnSuccessListener {
-                        result -> doc = result.documents[0]
-                        if(doc["messages"] != null){
-                            val messages = doc["messages"] as ArrayList<Message>
-                            messages.add(mes)
-                            db.collection("chat").document(doc.id).update("messages", messages.toList())
-                        }else{
-                            db.collection("chat").document(doc.id).update("messages", mes)
-                        }
-                    }
-                }
-        }
-
-        joinButton.setOnClickListener {
-            if(currentUser.uid == creatorUid) {
-                detailRG.visibility = View.VISIBLE
-                joinButton.visibility = View.INVISIBLE
+                    .show()
             }else{
-                joinButton.visibility = View.GONE
+                ownerResponded(doc)
             }
-            db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
-                val requests = ArrayList<String>()
-                if(it.documents[0]["requests"] != null){
-                    requests.addAll(it.documents[0]["requests"] as ArrayList<String>)
-                }
-                requests.add(auth.currentUser!!.uid)
-                it.documents[0].reference.update("requests", requests).addOnSuccessListener {_->
-                    db.collection("users").whereEqualTo("uid", it.documents[0]["creatorUid"].toString())
-                        .get().addOnSuccessListener {owner->
-                            val tokens = ArrayList<String>()
-                            if(owner.documents[0]["tokens"] != null){
-                                tokens.addAll(owner.documents[0]["tokens"] as ArrayList<String>)
-                            }
-                            db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get()
-                                .addOnSuccessListener {me->
-                                    MyFirebaseMessagingService().sendNotificationToOwnerOnJoinRequest(tokens,
-                                        me.documents[0]["name"].toString(), it.documents[0]["name"].toString(), currentLobbyUid)
-                                    Toast.makeText(requireContext(), "Join Request sent!", Toast.LENGTH_SHORT).show()
-                            }
-
-                    }
-                }
-            }
-            //addPlayerToLobby(currentUser.uid)
-            //setUpMenu()
         }
+    }
 
-        fab.setOnClickListener {
-            if(isCurrentUserInLobby()){
-                val names = ArrayList<String>()
-                val uids = ArrayList<String>()
-                CoroutineScope(Dispatchers.Default).launch {
-                    val user =
-                        Tasks.await(db.collection("users").whereEqualTo("uid", currentUser.uid).get())
-                    for (friend in user.documents[0]["friends"] as ArrayList<String>) {
-                        val tmp = Tasks.await(db.collection("users").whereEqualTo("uid", friend).get())
-                        names.add(tmp.documents[0]["name"].toString())
-                        uids.add(friend)
-                    }
-                }.invokeOnCompletion {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val list2 = ArrayList<String>()
-                        MaterialAlertDialogBuilder(requireContext())
-                            .setTitle("Invite friends?")
-                            .setNeutralButton("Cancel"){ _, _ -> }
-                            .setPositiveButton("Invite") {_, _ ->
-                                invitePlayers(list2)
-                            }
-                            .setMultiChoiceItems(names.toTypedArray(), BooleanArray(names.size)) { _, which, checked ->
-                                if(checked){
-                                    list2.add(uids[which])
-                                }else{
-                                    list2.remove(uids[which])
-                                }
-                            }
-                            .show()
-                    }
+    private fun ownerResponded(doc: DocumentSnapshot){
+        if(doc["ownerResponded"] != null){
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Rate your teammates!")
+                .setMessage("We noticed that your game is over.Would you like to rate your teammates")
+                .setCancelable(false)
+                .setNegativeButton("No") { _, _ ->
+                    requireActivity().onBackPressed()
                 }
-            }else{
-                Toast.makeText(requireContext(), "Please join first!", Toast.LENGTH_LONG).show()
+                .setPositiveButton("Yes") { _, _ ->
+                    val transaction = requireActivity().supportFragmentManager.beginTransaction()
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    transaction
+                        .add(android.R.id.content, RatePlayersDialogFragment(doc["uid"].toString()))
+                        .addToBackStack("RatePlayers")
+                        .commit()
+                    //RatePlayersDialogFragment(doc["uid"].toString()).show(requireActivity().supportFragmentManager, "Dialog")
+                }
+                .show()
+            val responded = ArrayList<String>()
+            if(doc["playersResponded"] != null){
+                responded.addAll(doc["playersResponded"] as ArrayList<String>)
             }
+            //responded.add(auth.currentUser!!.uid) TODO
+            doc.reference.update("playersResponded", responded)
         }
     }
 
@@ -401,7 +534,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun setupMessagesRecyclerView(){
-        adapterMessages = MessagesDataAdapter(ArrayList())
+        adapterMessages = MessagesDataAdapter(ArrayList(), requireContext())
         chatRV.adapter = adapterMessages
         chatRV.layoutManager = LinearLayoutManager(requireContext())
         chatRV.setHasFixedSize(true)

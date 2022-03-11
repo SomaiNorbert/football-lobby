@@ -12,9 +12,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
+import com.example.football_lobby.adapters.RatingsDataAdapter
+import com.example.football_lobby.models.Rating
 import com.example.football_lobby.services.MyFirebaseMessagingService
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
@@ -25,6 +30,9 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -38,6 +46,10 @@ class ProfileFragment : Fragment() {
     private lateinit var email: TextView
     private lateinit var birthday: TextView
     private lateinit var aboutMe: TextView
+    private lateinit var ratingsRV: RecyclerView
+    private lateinit var groupAboutMe: Group
+
+    private lateinit var adapterRatings: RatingsDataAdapter
 
     private lateinit var userUid: String
     private var user:FirebaseUser? = null
@@ -75,11 +87,14 @@ class ProfileFragment : Fragment() {
             email = view.findViewById(R.id.emailTxt)
             birthday = view.findViewById(R.id.birthdayTxt)
             aboutMe = view.findViewById(R.id.aboutMeTxt)
+            ratingsRV = view.findViewById(R.id.myRatingsRV)
+            groupAboutMe = view.findViewById(R.id.groupAbout)
 
             userUid = arguments?.get("playerUid").toString()
             if (userUid == "" || userUid == "null") {
                 userUid = user!!.uid
             }else{
+
                 val toolbar = requireActivity().findViewById<MaterialToolbar>(R.id.topAppToolbar)
                 addFriendItem = toolbar.menu.findItem(R.id.addFriendItem)
                 toolbar.menu.setGroupVisible(R.id.profileGroup, userUid == user!!.uid)
@@ -95,9 +110,13 @@ class ProfileFragment : Fragment() {
                     }
                 }
             }
+            setUpRecyclerView()
             db.collection("users").whereEqualTo("uid", userUid).get()
                 .addOnSuccessListener { result ->
                     val userData = result.documents[0]
+
+                    loadRatingsIntoDataAdapter(userData)
+
                     storageRef.child("images/${userUid}").downloadUrl.addOnSuccessListener {
                         Glide.with(requireContext()).load(it).into(profilePic)
                     }
@@ -123,12 +142,51 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun loadRatingsIntoDataAdapter(doc: DocumentSnapshot){
+        val list = ArrayList<Rating>()
+        val ratings = ArrayList<HashMap<String,String>>()
+        if(doc["ratings"] != null){
+            ratings.addAll(doc["ratings"] as ArrayList<HashMap<String, String>>)
+        }
+        for(rating in ratings){
+            list.add(
+                Rating(
+                    rating["punctuality"].toString().toInt(),
+                    rating["behavior"].toString().toInt(),
+                    rating["calmness"].toString().toInt(),
+                    rating["sportsmanship"].toString().toInt(),
+                    rating["personalComment"].toString(),
+                    rating["fromLobbyUid"].toString(),
+                    rating["fromUid"].toString()
+                )
+            )
+        }
+        adapterRatings.setData(list)
+    }
+
+    private fun setUpRecyclerView(){
+        adapterRatings = RatingsDataAdapter(ArrayList())
+        ratingsRV.adapter = adapterRatings
+        ratingsRV.layoutManager = LinearLayoutManager(requireContext())
+        ratingsRV.setHasFixedSize(true)
+    }
+
     private fun addFriendSetup(b: Boolean) {
         if(b){
             addFriendItem.title = "Send Friend Request"
         }else{
             addFriendItem.title = "Remove from Friends"
         }
+    }
+
+    fun loadAboutMe(){
+        ratingsRV.visibility = View.INVISIBLE
+        groupAboutMe.visibility = View.VISIBLE
+    }
+
+    fun loadMyRatings(){
+        ratingsRV.visibility = View.VISIBLE
+        groupAboutMe.visibility = View.INVISIBLE
     }
 
     fun signOut() {

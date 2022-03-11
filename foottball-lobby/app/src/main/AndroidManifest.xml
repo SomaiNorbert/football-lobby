@@ -29,6 +29,11 @@
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <nav-graph android:value="@navigation/navigation_graph" />
         </activity>
 
         <meta-data

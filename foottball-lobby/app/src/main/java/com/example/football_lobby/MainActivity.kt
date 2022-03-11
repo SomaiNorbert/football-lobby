@@ -52,8 +52,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             ////////
-        }
 
+
+        }
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
         bottomNavigationMain = findViewById(R.id.bottomNavigationViewMain)
@@ -123,6 +124,21 @@ class MainActivity : AppCompatActivity() {
                 else -> {
                     false
                 }
+            }
+        }
+
+        bottomNavigationProfile.setOnItemSelectedListener {
+            val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
+            when(it.itemId){
+                R.id.aboutMeItem -> {
+                    fragment.loadAboutMe()
+                    true
+                }
+                R.id.myRatingsItem-> {
+                    fragment.loadMyRatings()
+                    true
+                }
+                else -> {false}
             }
         }
 

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/from"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:text="From:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/inLobby" />
+
+        <TextView
+            android:id="@+id/fromNameTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="fromName"
+            app:layout_constraintBottom_toBottomOf="@+id/from"
+            app:layout_constraintStart_toEndOf="@+id/from"
+            app:layout_constraintTop_toTopOf="@+id/from" />
+
+        <TextView
+            android:id="@+id/personapComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Comment:"
+            app:layout_constraintStart_toStartOf="@+id/punctuality"
+            app:layout_constraintTop_toBottomOf="@+id/punctuality" />
+
+        <TextView
+            android:id="@+id/punctuality"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Punctuality:"
+            app:layout_constraintEnd_toStartOf="@+id/punctualityTxt"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/from"
+            app:layout_constraintTop_toBottomOf="@+id/from" />
+
+        <TextView
+            android:id="@+id/punctualityTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:text="5"
+            app:layout_constraintBottom_toBottomOf="@+id/punctuality"
+            app:layout_constraintEnd_toStartOf="@+id/behavior"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/punctuality"
+            app:layout_constraintTop_toTopOf="@+id/punctuality" />
+
+        <TextView
+            android:id="@+id/behavior"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Behavior:"
+            app:layout_constraintBottom_toBottomOf="@+id/punctualityTxt"
+            app:layout_constraintEnd_toStartOf="@+id/behaviorTxt"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/punctualityTxt"
+            app:layout_constraintTop_toTopOf="@+id/punctualityTxt" />
+
+        <TextView
+            android:id="@+id/behaviorTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:text="5"
+            app:layout_constraintBottom_toBottomOf="@+id/behavior"
+            app:layout_constraintEnd_toStartOf="@+id/calmness"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/behavior"
+            app:layout_constraintTop_toTopOf="@+id/behavior" />
+
+        <TextView
+            android:id="@+id/calmness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Calmness:"
+            app:layout_constraintBottom_toBottomOf="@+id/behaviorTxt"
+            app:layout_constraintEnd_toStartOf="@+id/calmnessTxt"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/behaviorTxt"
+            app:layout_constraintTop_toTopOf="@+id/behaviorTxt" />
+
+        <TextView
+            android:id="@+id/calmnessTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:text="5"
+            app:layout_constraintBottom_toBottomOf="@+id/calmness"
+            app:layout_constraintEnd_toStartOf="@+id/sportsmanship"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/calmness"
+            app:layout_constraintTop_toTopOf="@+id/calmness" />
+
+        <TextView
+            android:id="@+id/sportsmanship"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Sportsmanship:"
+            app:layout_constraintBottom_toBottomOf="@+id/calmnessTxt"
+            app:layout_constraintEnd_toStartOf="@+id/sportsmanshipTxt"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/calmnessTxt"
+            app:layout_constraintTop_toTopOf="@+id/calmnessTxt" />
+
+        <TextView
+            android:id="@+id/sportsmanshipTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginEnd="5dp"
+            android:text="5"
+            app:layout_constraintBottom_toBottomOf="@+id/sportsmanship"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/sportsmanship"
+            app:layout_constraintTop_toTopOf="@+id/sportsmanship" />
+
+        <TextView
+            android:id="@+id/commentTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="comment"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/personapComment"
+            app:layout_constraintTop_toBottomOf="@+id/personapComment"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <TextView
+            android:id="@+id/inLobby"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="In lobby:"
+            app:layout_constraintStart_toStartOf="@+id/from"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/lobbyNameRatingTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="lobbyName"
+            app:layout_constraintBottom_toBottomOf="@+id/inLobby"
+            app:layout_constraintStart_toEndOf="@+id/inLobby"
+            app:layout_constraintTop_toTopOf="@+id/inLobby" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/commentGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="personapComment,commentTxt" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

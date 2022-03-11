@@ -91,7 +91,7 @@ class FindLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener
         val list = ArrayList<Lobby>()
         val result = Tasks.await(db.collection("lobbies").get())
         for (lobby in result.documents) {
-            if (lobby["public"] as Boolean)
+            if (lobby["public"] as Boolean && !(lobby["isOnGoing"] as Boolean))
                 list.add(
                     Lobby(
                         lobby["uid"].toString(),
