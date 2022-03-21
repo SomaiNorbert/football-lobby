@@ -82,6 +82,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.profileFragment -> {
                     showTopMenu(R.id.profileGroup)
                     showBottomNavigationProfile()
+                    bottomNavigationProfile.selectedItemId = R.id.aboutMeItem
                 }
                 R.id.findLobbiesFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment,
                 R.id.myFriendsFragment, R.id.findPlayersFragment-> {
@@ -128,18 +129,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         bottomNavigationProfile.setOnItemSelectedListener {
-            val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
-            when(it.itemId){
-                R.id.aboutMeItem -> {
-                    fragment.loadAboutMe()
-                    true
+            try {
+                val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
+                when(it.itemId){
+                    R.id.aboutMeItem -> {
+                        fragment.loadAboutMe()
+                        true
+                    }
+                    R.id.myRatingsItem-> {
+                        fragment.loadMyRatings()
+                        true
+                    }
+                    else -> {false}
                 }
-                R.id.myRatingsItem-> {
-                    fragment.loadMyRatings()
-                    true
-                }
-                else -> {false}
+            } catch(e:Exception){
+                Log.d(TAG, e.toString())
+                true
             }
+
         }
 
         topAppBar.setNavigationOnClickListener {
