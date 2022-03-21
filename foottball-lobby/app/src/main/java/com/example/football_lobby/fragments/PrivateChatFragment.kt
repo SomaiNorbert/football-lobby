@@ -32,6 +32,9 @@ import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class PrivateChatFragment : Fragment() {
 
@@ -95,10 +98,14 @@ class PrivateChatFragment : Fragment() {
             if(messagePEDT.text.isNotEmpty())
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { resMe ->
+                    val calendar = Calendar.getInstance()
                     val mes = Message(
                         user.uid,
                         resMe.documents[0]["name"].toString(),
-                        messagePEDT.text.toString()
+                        messagePEDT.text.toString(),
+                        "" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + (calendar.get(Calendar.MONTH)+1) +
+                                "/" + calendar.get(Calendar.YEAR) + " " + calendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                                calendar.get(Calendar.MINUTE)
                     )
                     val fromName = resMe.documents[0]["name"].toString()
                     val fromUid = resMe.documents[0]["uid"].toString()
@@ -160,7 +167,8 @@ class PrivateChatFragment : Fragment() {
             doc!!.reference.addSnapshotListener { value, _ ->
                 val messages = ArrayList<Message>()
                 for (message in value!!["messages"] as ArrayList<HashMap<String, String>>) {
-                    messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString()))
+                    messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString(),
+                                            message["time"].toString()))
                 }
                 if(adapterMessages.itemCount == 0){
                     CoroutineScope(Dispatchers.Main).launch {

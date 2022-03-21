@@ -1,6 +1,8 @@
 package com.example.football_lobby.adapters
 
+import android.content.ContentValues.TAG
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +42,8 @@ class MessagesDataAdapter(
         storageRef.child("images/${currentItem.senderUid}").downloadUrl.addOnSuccessListener {
             Glide.with(context).load(it).into(holder.senderImageView)
         }
+        if(currentItem.time != "null")
+            holder.messageTime.text = currentItem.time
     }
 
     override fun getItemCount() = list.size
@@ -58,6 +62,7 @@ class MessagesDataAdapter(
         val messageTextView: TextView = itemView.findViewById(R.id.messageTextView)
         val senderImageView: CircleImageView = itemView.findViewById(R.id.senderImageView)
         val senderTextView: TextView = itemView.findViewById(R.id.senderTextView)
+        val messageTime: TextView = itemView.findViewById(R.id.time)
     }
 
 }
