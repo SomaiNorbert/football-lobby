@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -125,6 +126,14 @@ class PrivateChatFragment : Fragment() {
                     }
                 }
         }
+
+        val onClickListener = View.OnClickListener() {
+            val bundle = Bundle()
+            bundle.putString("playerUid", toUid)
+            findNavController().navigate(R.id.action_global_profileFragment, bundle)
+        }
+        toNameTxt.setOnClickListener(onClickListener)
+        profileImgPrivate.setOnClickListener(onClickListener)
     }
 
     private fun getDoc():DocumentSnapshot? {
