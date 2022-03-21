@@ -15,6 +15,7 @@ import com.example.football_lobby.R
 import com.google.api.Distribution
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -22,6 +23,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.w3c.dom.Text
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment() {
 
@@ -75,20 +78,22 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
 
                 if(pi != -1 && bi != -1 && ci != -1 && si != -1){ // player is rated
                         db.collection("users").whereEqualTo("uid", uids[i]).get().addOnSuccessListener {
-                            val ratings = ArrayList<HashMap<String,String>>()
-                            if(it.documents[0]["ratings"] != null){
-                                ratings.addAll(it.documents[0]["ratings"] as ArrayList<HashMap<String,String>>)
+                            val ratings = ArrayList<HashMap<String, String>>()
+                            if (it.documents[0]["ratings"] != null) {
+                                ratings.addAll(it.documents[0]["ratings"] as ArrayList<HashMap<String, String>>)
                             }
                             val rating = HashMap<String, String>()
-                            rating["punctuality"] = (pi+1).toString()
-                            rating["behavior"] = (bi+1).toString()
-                            rating["calmness"] = (ci+1).toString()
-                            rating["sportsmanship"] = (si+1).toString()
+                            rating["punctuality"] = (pi + 1).toString()
+                            rating["behavior"] = (bi + 1).toString()
+                            rating["calmness"] = (ci + 1).toString()
+                            rating["sportsmanship"] = (si + 1).toString()
                             rating["personalComment"] = pci.toString()
                             rating["fromUid"] = auth.currentUser!!.uid
                             rating["fromLobbyUid"] = lobbyUid
                             ratings.add(rating)
-                            it.documents[0].reference.update("ratings", ratings)
+                            it.documents[0].reference.update("ratings", ratings).addOnSuccessListener {_->
+                                updateOverallRatingForPlayer(it.documents[0])
+                            }
                         }
 
                 }else if(getIndexOfSelectedRadioButton(punctuality[i]) == -1 &&
@@ -175,6 +180,31 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
                 }
             }
         }
+    }
+
+    private fun updateOverallRatingForPlayer(playerDoc: DocumentSnapshot) {
+        val ratings = ArrayList<HashMap<String, String>>()
+        if(playerDoc["ratings"] != null){
+            ratings.addAll(playerDoc["ratings"] as ArrayList<HashMap<String, String>>)
+        }
+        var punc = 0.0
+        var beha = 0.0
+        var calm = 0.0
+        var spor = 0.0
+        var nr = 0.0
+        for(rating in ratings){
+            punc += rating["punctuality"].toString().toDouble()
+            beha += rating["behavior"].toString().toDouble()
+            calm += rating["calmness"].toString().toDouble()
+            spor += rating["sportsmanship"].toString().toDouble()
+            nr ++
+        }
+        punc /= nr
+        beha /= nr
+        calm /= nr
+        spor /= nr
+
+        playerDoc.reference.update("overallRating", BigDecimal(((punc+beha+calm+spor)/4)).setScale(2, RoundingMode.HALF_EVEN).toDouble())
     }
 
     private fun getIndexOfSelectedRadioButton(radioGroup: RadioGroup): Int {
