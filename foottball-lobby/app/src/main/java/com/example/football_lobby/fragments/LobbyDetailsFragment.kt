@@ -19,6 +19,7 @@ import com.example.football_lobby.adapters.PlayersDataAdapter
 import com.example.football_lobby.models.Message
 import com.example.football_lobby.models.Player
 import com.example.football_lobby.services.MyFirebaseMessagingService
+import com.example.football_lobby.services.Services
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -92,6 +93,10 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         super.onViewCreated(view, savedInstanceState)
 
         currentLobbyUid = arguments?.get("uid").toString()
+        val notId = arguments?.get("notificationID").toString()
+        if(notId.isNotEmpty() && notId != "null"){
+            Services.removeNotificationFromPlayer(currentUser.uid, notId)
+        }
 
         gameNameTxt = view.findViewById(R.id.gameNameTxt)
         locationDetailTxt = view.findViewById(R.id.locationDetailTxt)
@@ -125,7 +130,8 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     loadMessagesIntoDataAdapter()
                     db.collection(collection).whereEqualTo("uid", currentLobbyUid)
                         .addSnapshotListener { value, _ ->
-                            if(value!!.documents.size != 0){
+                            if(value == null)return@addSnapshotListener
+                            if(value.documents.size != 0){
                                 lobbyData = value.documents[0]
                                 setupPlayersRecyclerView()
                                 creatorUid = lobbyData["creatorUid"] as String
@@ -243,13 +249,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     db.collection("users").whereEqualTo("uid", currentUser.uid).get()
                         .addOnSuccessListener {
                             val calendar = Calendar.getInstance()
+                            val min = if(calendar.get(Calendar.MINUTE).toString().length == 1){"0" + calendar.get(Calendar.MINUTE)}else{calendar.get(Calendar.MINUTE)}
                             val mes = Message(
                                 currentUser.uid,
                                 it.documents[0]["name"].toString(),
                                 messageEDT.text.toString(),
                                 "" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + (calendar.get(Calendar.MONTH)+1) +
                                         "/" + calendar.get(Calendar.YEAR) + " " + calendar.get(Calendar.HOUR_OF_DAY) + ":" +
-                                        calendar.get(Calendar.MINUTE)
+                                        min
                             )
                             messageEDT.setText("")
                             var doc: DocumentSnapshot
@@ -301,7 +308,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                                             .get()
                                             .addOnSuccessListener { me ->
                                                 MyFirebaseMessagingService().sendNotificationToOwnerOnJoinRequest(
-                                                    tokens,
+                                                    arrayListOf(owner.documents[0]["uid"].toString()),tokens,
                                                     me.documents[0]["name"].toString(),
                                                     it.documents[0]["name"].toString(),
                                                     currentLobbyUid
@@ -398,8 +405,8 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                                         if(player.documents[0]["tokens"] != null){
                                             tokens.addAll(player.documents[0]["tokens"] as ArrayList<String>)
                                         }
-                                        MyFirebaseMessagingService().sendNotificationToPlayersOnLobbyDone(tokens,
-                                            it.documents[0]["name"].toString(), it.documents[0]["uid"].toString())
+                                        MyFirebaseMessagingService().sendNotificationToPlayersOnLobbyDone(arrayListOf(playerUid),
+                                            tokens, it.documents[0]["name"].toString(), it.documents[0]["uid"].toString())
                                 }
                             }
                         }
@@ -523,7 +530,8 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
 
     private fun loadMessagesIntoDataAdapter(){
         db.collection("chat").whereEqualTo("lobbyUid", currentLobbyUid).addSnapshotListener { value, _ ->
-            val mes = value!!.documents[0]["messages"] as ArrayList<HashMap<String, String>>
+            if(value == null) return@addSnapshotListener
+            val mes = value.documents[0]["messages"] as ArrayList<HashMap<String, String>>
             val messages = ArrayList<Message>()
             for(message in mes){
                 messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString(),
@@ -592,7 +600,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
                 }
                 db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {me->
-                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestAccepted(tokens,
+                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestAccepted(arrayListOf(uid), tokens,
                         me.documents[0]["name"].toString(), it.documents[0]["name"].toString(), currentLobbyUid)
                 }
 
@@ -609,7 +617,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
                 }
                 db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {me->
-                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestDenied(tokens,
+                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestDenied(arrayListOf(uid), tokens,
                         me.documents[0]["name"].toString(), it.documents[0]["name"].toString())
                 }
             }

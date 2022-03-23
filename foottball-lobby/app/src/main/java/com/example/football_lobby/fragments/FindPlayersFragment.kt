@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.football_lobby.R
 import com.example.football_lobby.adapters.PlayersDataAdapter
 import com.example.football_lobby.models.Player
+import com.example.football_lobby.services.Services
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -55,6 +56,11 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val notId = arguments?.get("notificationID").toString()
+        if(notId.isNotEmpty() && notId != "null"){
+            Services.removeNotificationFromPlayer(auth.currentUser!!.uid, notId)
+        }
 
         playerNameEDT = view.findViewById(R.id.findPlayerByNameTextInputEditText)
         ratingsSpinner = view.findViewById(R.id.ratingsSpinner)

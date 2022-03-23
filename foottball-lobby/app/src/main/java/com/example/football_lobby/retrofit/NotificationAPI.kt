@@ -1,7 +1,7 @@
 package com.example.football_lobby.retrofit
 
-import com.example.football_lobby.Constants.Companion.CONTENT_TYPE
-import com.example.football_lobby.Constants.Companion.SERVER_KEY
+import com.example.football_lobby.retrofit.Constants.Companion.CONTENT_TYPE
+import com.example.football_lobby.retrofit.Constants.Companion.SERVER_KEY
 import com.example.football_lobby.models.PushNotification
 import okhttp3.ResponseBody
 import retrofit2.Response

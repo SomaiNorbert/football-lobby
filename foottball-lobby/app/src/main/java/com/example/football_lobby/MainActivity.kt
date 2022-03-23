@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
             showTopNav()
             hideTopMenu()
             when (destination.id) {
-                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment, R.id.privateChatFragment -> {
+                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment -> {
                     hideBottomNavigationTotally()
                 }
                 R.id.startFragment -> {
@@ -81,18 +81,29 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.profileFragment -> {
                     showTopMenu(R.id.profileGroup)
+                    showTopMenu(R.id.notificationGroup)
                     showBottomNavigationProfile()
                     bottomNavigationProfile.selectedItemId = R.id.aboutMeItem
+                }
+                R.id.privateChatFragment->{
+                    showTopMenu(R.id.notificationGroup)
+                    hideBottomNavigationTotally()
                 }
                 R.id.findLobbiesFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment,
                 R.id.myFriendsFragment, R.id.findPlayersFragment-> {
                     hideTopNav()
                     showTopMenu(R.id.goToProfileGroup)
+                    showTopMenu(R.id.notificationGroup)
                     showBottomNavigationMain()
                 }
                 R.id.lobbyDetailsFragment -> {
                     showTopMenu(R.id.inLobbyGroup)
+                    showTopMenu(R.id.notificationGroup)
                     hideBottomNavigationTotally()
+                }
+                R.id.notificationsFragment -> {
+                    hideBottomNavigationTotally()
+                    showTopMenu(R.id.goToProfileGroup)
                 }
                 else -> {
                     showBottomNavigationMain()
@@ -155,6 +166,10 @@ class MainActivity : AppCompatActivity() {
         topAppBar.setOnMenuItemClickListener {
             when(it.itemId)
             {
+                R.id.notificationScreenItem ->{
+                    navController.navigate(R.id.action_global_notificationsFragment)
+                    true
+                }
                 R.id.editProfileItem -> {
                     navController.navigate(R.id.action_profileFragment_to_registrationFragment)
                     true
@@ -218,6 +233,7 @@ class MainActivity : AppCompatActivity() {
         topAppBar.menu.setGroupVisible(R.id.goToProfileGroup,false)
         topAppBar.menu.setGroupVisible(R.id.inLobbyGroup, false)
         topAppBar.menu.setGroupVisible(R.id.addFriendGroup, false)
+        topAppBar.menu.setGroupVisible(R.id.notificationGroup, false)
     }
 
     private fun showTopNav() {

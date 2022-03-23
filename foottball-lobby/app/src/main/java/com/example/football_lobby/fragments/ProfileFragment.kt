@@ -253,7 +253,8 @@ class ProfileFragment : Fragment() {
                         if(otherUser["tokens"] != null){
                             tokens.addAll(otherUser["tokens"] as ArrayList<String>)
                         }
-                        MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequest(tokens, otherUser["name"].toString())
+                        MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequest(arrayListOf(userUid),
+                            tokens, me["name"].toString())
                     }
                 }else{
                     myFriends.remove(otherUser["uid"].toString())

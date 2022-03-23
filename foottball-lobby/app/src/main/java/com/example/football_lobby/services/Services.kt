@@ -43,7 +43,7 @@ class Services {
                                     tokens = it.documents[0]["tokens"] as ArrayList<String>
                                 }
                                 MyFirebaseMessagingService().sendNotificationToOwnerOnLobbyDone(
-                                    tokens,
+                                    arrayListOf(lobby["creatorUid"].toString()), tokens,
                                     lobby["name"].toString(),
                                     lobby["uid"].toString()
                                 )
@@ -82,5 +82,20 @@ class Services {
             lobbyCalendar.set(date[2].toInt(), date[1].toInt()-1, date[0].toInt(), time[0].toInt(), time[1].toInt())
             return lobbyCalendar.before(currentCalendar)
         }
+
+        fun removeNotificationFromPlayer(playerUid: String, notificationID: String){
+            Firebase.firestore.collection("users").whereEqualTo("uid", playerUid).get().addOnSuccessListener {
+                val notifications = ArrayList<HashMap<String, String>>()
+                if(it.documents[0]["notifications"] != null){
+                    for(notification in it.documents[0]["notifications"] as ArrayList<HashMap<String, String>>){
+                        if(notification["id"] != notificationID){
+                            notifications.add(notification)
+                        }
+                    }
+                    it.documents[0].reference.update("notifications", notifications)
+                }
+            }
+        }
+
     }
 }

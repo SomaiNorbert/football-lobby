@@ -13,6 +13,7 @@ import com.example.football_lobby.R
 import com.example.football_lobby.adapters.PlayersDataAdapter
 import com.example.football_lobby.models.Player
 import com.example.football_lobby.services.MyFirebaseMessagingService
+import com.example.football_lobby.services.Services
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -50,6 +51,11 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val notId = arguments?.get("notificationID").toString()
+        if(notId.isNotEmpty() && notId != "null"){
+            Services.removeNotificationFromPlayer(auth.currentUser!!.uid, notId)
+        }
+
         myFriendsRV = view.findViewById(R.id.myFriendsRV)
         noFriendsFoundTxt = view.findViewById(R.id.noFriendsFoundTxt)
 
@@ -84,7 +90,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
     }
 
     private fun setupRecyclerView() {
-        adapterPlayers = PlayersDataAdapter(ArrayList(), this, "", auth.currentUser!!.uid)
+        adapterPlayers = PlayersDataAdapter(ArrayList(), this, "friends", auth.currentUser!!.uid)
         myFriendsRV.adapter = adapterPlayers
         myFriendsRV.layoutManager = LinearLayoutManager(requireContext())
         myFriendsRV.setHasFixedSize(true)
@@ -126,7 +132,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
                 if (he.documents[0]["tokens"] != null) {
                     tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
                 }
-                MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequestAccepted(tokens, it.documents[0]["name"].toString())
+                MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequestAccepted(arrayListOf(uid),tokens, it.documents[0]["name"].toString())
             }
         }
     }
@@ -139,7 +145,7 @@ class MyFriendsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
                 if (he.documents[0]["tokens"] != null) {
                     tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
                 }
-                MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequestDenied(tokens, it.documents[0]["name"].toString())
+                MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequestDenied(arrayListOf(uid), tokens, it.documents[0]["name"].toString())
                 adapterPlayers.removePlayerByUid(uid)
             }
         }

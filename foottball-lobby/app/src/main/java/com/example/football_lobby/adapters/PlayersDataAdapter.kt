@@ -54,7 +54,9 @@ class PlayersDataAdapter(
             holder.chatButton.visibility = View.VISIBLE
             if(auth.currentUser!!.uid == creatorUid)
                 holder.kickFromLobbyButton.visibility = View.VISIBLE
-            if(creatorUid == ""){
+            if(creatorUid == "friends") {
+                setAcceptAndDeclineVisibility(currentItem, holder, "users")
+            }else if(creatorUid == ""){
                 holder.inviteToLobbyButton.visibility = View.VISIBLE
                 setAcceptAndDeclineVisibility(currentItem, holder, "users")
             }else{
