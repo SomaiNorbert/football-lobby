@@ -11,6 +11,7 @@ import androidx.core.view.allViews
 import androidx.core.view.children
 import androidx.core.view.marginLeft
 import androidx.fragment.app.DialogFragment
+import com.bumptech.glide.Glide
 import com.example.football_lobby.R
 import com.google.api.Distribution
 import com.google.firebase.auth.FirebaseAuth
@@ -19,6 +20,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,6 +62,9 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
 
         val linearLayout = view.findViewById<LinearLayout>(R.id.linearLayout)
         linearLayout.gravity = LinearLayout.TEXT_ALIGNMENT_CENTER
+        val params = linearLayout.layoutParams
+        params.width = LinearLayout.LayoutParams.MATCH_PARENT
+        linearLayout.layoutParams = params
         val txt = TextView(requireContext())
         txt.text = "Rate players"
         txt.textSize = 30f
@@ -69,6 +75,7 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
         linearLayout.addView(sendButton)
         sendButton.setOnClickListener {
             var ok = true
+            val rated = ArrayList<Int>()
             for(i in 0 until numberOfPlayersToRate){
                 val pi = getIndexOfSelectedRadioButton(punctuality[i])
                 val bi = getIndexOfSelectedRadioButton(behavior[i])
@@ -77,24 +84,8 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
                 val pci = pComments[i].text
 
                 if(pi != -1 && bi != -1 && ci != -1 && si != -1){ // player is rated
-                        db.collection("users").whereEqualTo("uid", uids[i]).get().addOnSuccessListener {
-                            val ratings = ArrayList<HashMap<String, String>>()
-                            if (it.documents[0]["ratings"] != null) {
-                                ratings.addAll(it.documents[0]["ratings"] as ArrayList<HashMap<String, String>>)
-                            }
-                            val rating = HashMap<String, String>()
-                            rating["punctuality"] = (pi + 1).toString()
-                            rating["behavior"] = (bi + 1).toString()
-                            rating["calmness"] = (ci + 1).toString()
-                            rating["sportsmanship"] = (si + 1).toString()
-                            rating["personalComment"] = pci.toString()
-                            rating["fromUid"] = auth.currentUser!!.uid
-                            rating["fromLobbyUid"] = lobbyUid
-                            ratings.add(rating)
-                            it.documents[0].reference.update("ratings", ratings).addOnSuccessListener {_->
-                                updateOverallRatingForPlayer(it.documents[0])
-                            }
-                        }
+                    if(!rated.contains(i))
+                        rated.add(i)
 
                 }else if(getIndexOfSelectedRadioButton(punctuality[i]) == -1 &&
                     getIndexOfSelectedRadioButton(behavior[i]) == -1 &&
@@ -110,6 +101,33 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
                 }
             }
             if(ok){
+                for(i in rated){
+                    val pi = getIndexOfSelectedRadioButton(punctuality[i])
+                    val bi = getIndexOfSelectedRadioButton(behavior[i])
+                    val ci = getIndexOfSelectedRadioButton(calmness[i])
+                    val si = getIndexOfSelectedRadioButton(sportsmanship[i])
+                    val pci = pComments[i].text
+                    db.collection("users").whereEqualTo("uid", uids[i]).get().addOnSuccessListener {
+                        val ratings = ArrayList<HashMap<String, String>>()
+                        if (it.documents[0]["ratings"] != null) {
+                            ratings.addAll(it.documents[0]["ratings"] as ArrayList<HashMap<String, String>>)
+                        }
+                        val rating = HashMap<String, String>()
+                        rating["punctuality"] = (pi + 1).toString()
+                        rating["behavior"] = (bi + 1).toString()
+                        rating["calmness"] = (ci + 1).toString()
+                        rating["sportsmanship"] = (si + 1).toString()
+                        rating["personalComment"] = pci.toString()
+                        rating["fromUid"] = auth.currentUser!!.uid
+                        rating["fromLobbyUid"] = lobbyUid
+                        ratings.add(rating)
+                        it.documents[0].reference.update("ratings", ratings).addOnSuccessListener {_->
+                            db.collection("users").whereEqualTo("uid", uids[i]).get().addOnSuccessListener {updated->
+                                updateOverallRatingForPlayer(updated.documents[0])
+                            }
+                        }
+                    }
+                }
                 requireActivity().onBackPressed()
                 requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
             }
@@ -136,11 +154,29 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
                         uids.add(playersUid[i])
                         val name = playerDoc["name"].toString()
 
+                        val storageRef = Firebase.storage.reference
+                        val img = CircleImageView(requireContext())
+                        val params = LinearLayout.LayoutParams(100,100)
+                        params.bottomMargin = 25
+                        img.layoutParams = params
+                        storageRef.child("images/${playersUid[i]}").downloadUrl.addOnSuccessListener {
+                            try {
+                                Glide.with(requireContext()).load(it).into(img)
+                            } catch (e: Exception) {
+                            }
+                        }
+
                         val nameTxt = TextView(requireContext())
-                        nameTxt.text = name
+                        nameTxt.text = "    $name"
                         nameTxt.textSize = 25f
-                        linearLayout.addView(nameTxt)
                         names.add(name)
+
+                        val ll = LinearLayout(requireContext())
+                        ll.orientation = LinearLayout.HORIZONTAL
+                        ll.addView(img)
+                        ll.addView(nameTxt)
+
+                        linearLayout.addView(ll)
 
                         val punctualityTxt = TextView(requireContext())
                         punctualityTxt.text = "Punctuality"
@@ -199,11 +235,14 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
             spor += rating["sportsmanship"].toString().toDouble()
             nr ++
         }
+        if(punc == 0.0){
+            nr = 1.0
+        }
         punc /= nr
         beha /= nr
         calm /= nr
         spor /= nr
-
+        Log.d(TAG, BigDecimal(((punc+beha+calm+spor)/4)).setScale(2, RoundingMode.HALF_EVEN).toDouble().toString())
         playerDoc.reference.update("overallRating", BigDecimal(((punc+beha+calm+spor)/4)).setScale(2, RoundingMode.HALF_EVEN).toDouble())
     }
 
@@ -221,16 +260,34 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
     private fun createLinearLayoutWithRadioGroup(index: Int): LinearLayout {
         val linearLayout = LinearLayout(requireContext())
         linearLayout.gravity = LinearLayout.TEXT_ALIGNMENT_CENTER
+        val params = LinearLayout.LayoutParams(0,0)
+        val params2 = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT)
+        params2.leftMargin = 50
+        params2.rightMargin = 50
+        params.width = LinearLayout.LayoutParams.WRAP_CONTENT
+        params.height = LinearLayout.LayoutParams.WRAP_CONTENT
+        params.weight = 1.0f
+        linearLayout.layoutParams = params2
         val badTxt = TextView(requireContext())
         badTxt.text = "Bad"
+        //badTxt.layoutParams = params
         val goodTxt = TextView(requireContext())
         goodTxt.text = "Good"
+        //goodTxt.layoutParams = params
+        val txt = TextView(requireContext())
+        txt.text = " "
+        val txt2 = TextView(requireContext())
+        txt2.text = " "
         linearLayout.orientation = LinearLayout.HORIZONTAL
+        linearLayout.addView(txt)
         linearLayout.addView(badTxt)
         val radioGroup = RadioGroup(requireContext())
         radioGroup.orientation = RadioGroup.HORIZONTAL
+        radioGroup.layoutParams = params
         for(i in 0 until 5){
             val radioButton = RadioButton(requireContext())
+            if(i != 4)
+                radioButton.layoutParams = params
             radioGroup.addView(radioButton)
         }
         when (index) {
@@ -242,6 +299,7 @@ class RatePlayersDialogFragment(private var lobbyUid: String) : DialogFragment()
         }
         linearLayout.addView(radioGroup)
         linearLayout.addView(goodTxt)
+        linearLayout.addView(txt2)
         return linearLayout
     }
 

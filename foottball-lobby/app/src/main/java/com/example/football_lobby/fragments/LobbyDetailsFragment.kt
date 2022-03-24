@@ -455,23 +455,27 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     }
 
     private fun invitePlayers(listOfPlayers: ArrayList<String>) {
+        Log.d(TAG, listOfPlayers.toString())
         db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
             val players = ArrayList<String>()
             if(it.documents[0]["players"] != null)
                 players.addAll(it.documents[0]["players"] as ArrayList<String>)
             for (playerUid in listOfPlayers) {
+                Log.d(TAG, playerUid)
                 if (!players.contains(playerUid)) {
-                    addPlayerToLobby(playerUid)
+                    Log.d(TAG, playerUid)
+                    addPlayerToLobby(playerUid, players)
                 }
             }
         }
     }
 
-    private fun addPlayerToLobby(playerUid: String) {
+    private fun addPlayerToLobby(playerUid: String, players: ArrayList<String>) {
+        Log.d(TAG, "1")
         db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {lobby->
-            val players = ArrayList<String>()
-            if(lobby.documents[0]["players"] != null)
+            if(players.size == 0){
                 players.addAll(lobby.documents[0]["players"] as ArrayList<String>)
+            }
             players.add(playerUid)
             var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
             npil += 1
@@ -593,7 +597,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
             removePlayerFromRequestsByUid(it, uid)
             adapterPlayers.removePlayerByUid(uid)
-            addPlayerToLobby(uid)
+            addPlayerToLobby(uid, ArrayList())
             val tokens = ArrayList<String>()
             db.collection("users").whereEqualTo("uid", uid).get().addOnSuccessListener { he->
                 if(he.documents[0]["tokens"] != null){

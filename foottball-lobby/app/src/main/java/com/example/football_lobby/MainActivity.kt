@@ -40,20 +40,6 @@ class MainActivity : AppCompatActivity() {
 
         if(Firebase.auth.currentUser != null){
             Services.checkLobbies()
-            ////////Delete this later TODO
-            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-                Firebase.firestore.collection("users").whereEqualTo("uid", Firebase.auth.currentUser!!.uid).get()
-                    .addOnSuccessListener {
-                        val tokens = it.documents[0]["tokens"] as ArrayList<String>
-                        if(!tokens.contains(token)){
-                            tokens.add(token)
-                            it.documents[0].reference.update("tokens", tokens)
-                        }
-                }
-            }
-            ////////
-
-
         }
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
