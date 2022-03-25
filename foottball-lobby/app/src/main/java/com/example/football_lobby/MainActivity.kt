@@ -40,20 +40,6 @@ class MainActivity : AppCompatActivity() {
 
         if(Firebase.auth.currentUser != null){
             Services.checkLobbies()
-            ////////Delete this later TODO
-            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-                Firebase.firestore.collection("users").whereEqualTo("uid", Firebase.auth.currentUser!!.uid).get()
-                    .addOnSuccessListener {
-                        val tokens = it.documents[0]["tokens"] as ArrayList<String>
-                        if(!tokens.contains(token)){
-                            tokens.add(token)
-                            it.documents[0].reference.update("tokens", tokens)
-                        }
-                }
-            }
-            ////////
-
-
         }
 
         bottomNavigationProfile = findViewById(R.id.bottomNavigationViewProfile)
@@ -72,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             showTopNav()
             hideTopMenu()
             when (destination.id) {
-                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment, R.id.privateChatFragment -> {
+                R.id.loginFragment, R.id.registrationFragment, R.id.forgotPasswordFragment -> {
                     hideBottomNavigationTotally()
                 }
                 R.id.startFragment -> {
@@ -81,17 +67,29 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.profileFragment -> {
                     showTopMenu(R.id.profileGroup)
+                    showTopMenu(R.id.notificationGroup)
                     showBottomNavigationProfile()
+                    bottomNavigationProfile.selectedItemId = R.id.aboutMeItem
+                }
+                R.id.privateChatFragment->{
+                    showTopMenu(R.id.notificationGroup)
+                    hideBottomNavigationTotally()
                 }
                 R.id.findLobbiesFragment, R.id.createLobbyFragment, R.id.myLobbiesFragment,
                 R.id.myFriendsFragment, R.id.findPlayersFragment-> {
                     hideTopNav()
                     showTopMenu(R.id.goToProfileGroup)
+                    showTopMenu(R.id.notificationGroup)
                     showBottomNavigationMain()
                 }
                 R.id.lobbyDetailsFragment -> {
                     showTopMenu(R.id.inLobbyGroup)
+                    showTopMenu(R.id.notificationGroup)
                     hideBottomNavigationTotally()
+                }
+                R.id.notificationsFragment -> {
+                    hideBottomNavigationTotally()
+                    showTopMenu(R.id.goToProfileGroup)
                 }
                 else -> {
                     showBottomNavigationMain()
@@ -128,18 +126,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         bottomNavigationProfile.setOnItemSelectedListener {
-            val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
-            when(it.itemId){
-                R.id.aboutMeItem -> {
-                    fragment.loadAboutMe()
-                    true
+            try {
+                val fragment = navHostFragment.childFragmentManager.fragments[0] as ProfileFragment
+                when(it.itemId){
+                    R.id.aboutMeItem -> {
+                        fragment.loadAboutMe()
+                        true
+                    }
+                    R.id.myRatingsItem-> {
+                        fragment.loadMyRatings()
+                        true
+                    }
+                    else -> {false}
                 }
-                R.id.myRatingsItem-> {
-                    fragment.loadMyRatings()
-                    true
-                }
-                else -> {false}
+            } catch(e:Exception){
+                Log.d(TAG, e.toString())
+                true
             }
+
         }
 
         topAppBar.setNavigationOnClickListener {
@@ -148,6 +152,10 @@ class MainActivity : AppCompatActivity() {
         topAppBar.setOnMenuItemClickListener {
             when(it.itemId)
             {
+                R.id.notificationScreenItem ->{
+                    navController.navigate(R.id.action_global_notificationsFragment)
+                    true
+                }
                 R.id.editProfileItem -> {
                     navController.navigate(R.id.action_profileFragment_to_registrationFragment)
                     true
@@ -211,6 +219,7 @@ class MainActivity : AppCompatActivity() {
         topAppBar.menu.setGroupVisible(R.id.goToProfileGroup,false)
         topAppBar.menu.setGroupVisible(R.id.inLobbyGroup, false)
         topAppBar.menu.setGroupVisible(R.id.addFriendGroup, false)
+        topAppBar.menu.setGroupVisible(R.id.notificationGroup, false)
     }
 
     private fun showTopNav() {

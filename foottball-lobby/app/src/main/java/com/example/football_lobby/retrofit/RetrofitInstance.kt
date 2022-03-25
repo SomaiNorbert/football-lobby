@@ -1,6 +1,6 @@
 package com.example.football_lobby.retrofit
 
-import com.example.football_lobby.Constants.Companion.BASE_URL
+import com.example.football_lobby.retrofit.Constants.Companion.BASE_URL
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

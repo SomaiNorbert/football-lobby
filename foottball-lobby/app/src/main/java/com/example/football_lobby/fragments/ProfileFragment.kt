@@ -21,6 +21,7 @@ import com.example.football_lobby.R
 import com.example.football_lobby.adapters.RatingsDataAdapter
 import com.example.football_lobby.models.Rating
 import com.example.football_lobby.services.MyFirebaseMessagingService
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -32,6 +33,7 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
@@ -115,7 +117,9 @@ class ProfileFragment : Fragment() {
                 .addOnSuccessListener { result ->
                     val userData = result.documents[0]
 
-                    loadRatingsIntoDataAdapter(userData)
+                    CoroutineScope(Dispatchers.Default).launch {
+                        loadRatingsIntoDataAdapter(userData)
+                    }
 
                     storageRef.child("images/${userUid}").downloadUrl.addOnSuccessListener {
                         Glide.with(requireContext()).load(it).into(profilePic)
@@ -133,7 +137,7 @@ class ProfileFragment : Fragment() {
                     if (userData["overallRating"].toString() == "0") {
                         overallRating.text = "-"
                     } else {
-                        overallRating.text = userData["overallRating"].toString() + "/10"
+                        overallRating.text = userData["overallRating"].toString() + "/5"
                     }
                     email.text = userData["email"].toString()
                     birthday.text = userData["birthday"].toString()
@@ -148,20 +152,30 @@ class ProfileFragment : Fragment() {
         if(doc["ratings"] != null){
             ratings.addAll(doc["ratings"] as ArrayList<HashMap<String, String>>)
         }
-        for(rating in ratings){
+        for(rating in ratings) {
+            val lobby = Tasks.await(db.collection("oldLobbies").whereEqualTo("uid", rating["fromLobbyUid"].toString()).get())
+            val lobbyName = lobby.documents[0]["name"].toString()
+            val player = Tasks.await(db.collection("users").whereEqualTo("uid", rating["fromUid"].toString()).get())
+            val playerName = player.documents[0]["name"].toString()
+            var comment = ""
+            if(rating["personalComment"].toString().isNotEmpty()){
+                comment = "Comment: "
+            }
             list.add(
                 Rating(
                     rating["punctuality"].toString().toInt(),
                     rating["behavior"].toString().toInt(),
                     rating["calmness"].toString().toInt(),
                     rating["sportsmanship"].toString().toInt(),
-                    rating["personalComment"].toString(),
-                    rating["fromLobbyUid"].toString(),
-                    rating["fromUid"].toString()
+                    comment + rating["personalComment"].toString(),
+                    lobbyName,
+                    playerName
                 )
             )
         }
-        adapterRatings.setData(list)
+        CoroutineScope(Dispatchers.Main).launch {
+            adapterRatings.setData(list)
+        }
     }
 
     private fun setUpRecyclerView(){
@@ -239,7 +253,8 @@ class ProfileFragment : Fragment() {
                         if(otherUser["tokens"] != null){
                             tokens.addAll(otherUser["tokens"] as ArrayList<String>)
                         }
-                        MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequest(tokens, otherUser["name"].toString())
+                        MyFirebaseMessagingService().sendNotificationToPlayerOnFriendRequest(arrayListOf(userUid),
+                            tokens, me["name"].toString())
                     }
                 }else{
                     myFriends.remove(otherUser["uid"].toString())

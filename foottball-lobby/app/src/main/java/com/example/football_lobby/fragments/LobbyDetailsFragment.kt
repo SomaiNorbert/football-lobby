@@ -19,6 +19,7 @@ import com.example.football_lobby.adapters.PlayersDataAdapter
 import com.example.football_lobby.models.Message
 import com.example.football_lobby.models.Player
 import com.example.football_lobby.services.MyFirebaseMessagingService
+import com.example.football_lobby.services.Services
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -34,7 +35,9 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
+import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener{
@@ -90,6 +93,10 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         super.onViewCreated(view, savedInstanceState)
 
         currentLobbyUid = arguments?.get("uid").toString()
+        val notId = arguments?.get("notificationID").toString()
+        if(notId.isNotEmpty() && notId != "null"){
+            Services.removeNotificationFromPlayer(currentUser.uid, notId)
+        }
 
         gameNameTxt = view.findViewById(R.id.gameNameTxt)
         locationDetailTxt = view.findViewById(R.id.locationDetailTxt)
@@ -123,7 +130,8 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     loadMessagesIntoDataAdapter()
                     db.collection(collection).whereEqualTo("uid", currentLobbyUid)
                         .addSnapshotListener { value, _ ->
-                            if(value!!.documents.size != 0){
+                            if(value == null)return@addSnapshotListener
+                            if(value.documents.size != 0){
                                 lobbyData = value.documents[0]
                                 setupPlayersRecyclerView()
                                 creatorUid = lobbyData["creatorUid"] as String
@@ -163,7 +171,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                                     }
                                 } else {
                                     detailRG.visibility = View.INVISIBLE
-                                    db.collection("lobbies").whereEqualTo("uid", currentLobbyUid)
+                                    db.collection(collection).whereEqualTo("uid", currentLobbyUid)
                                         .get()
                                         .addOnSuccessListener {
                                             if (it.documents[0]["requests"] != null &&
@@ -240,10 +248,15 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                 if (messageEDT.text.isNotEmpty())
                     db.collection("users").whereEqualTo("uid", currentUser.uid).get()
                         .addOnSuccessListener {
+                            val calendar = Calendar.getInstance()
+                            val min = if(calendar.get(Calendar.MINUTE).toString().length == 1){"0" + calendar.get(Calendar.MINUTE)}else{calendar.get(Calendar.MINUTE)}
                             val mes = Message(
                                 currentUser.uid,
                                 it.documents[0]["name"].toString(),
-                                messageEDT.text.toString()
+                                messageEDT.text.toString(),
+                                "" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + (calendar.get(Calendar.MONTH)+1) +
+                                        "/" + calendar.get(Calendar.YEAR) + " " + calendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                                        min
                             )
                             messageEDT.setText("")
                             var doc: DocumentSnapshot
@@ -295,7 +308,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                                             .get()
                                             .addOnSuccessListener { me ->
                                                 MyFirebaseMessagingService().sendNotificationToOwnerOnJoinRequest(
-                                                    tokens,
+                                                    arrayListOf(owner.documents[0]["uid"].toString()),tokens,
                                                     me.documents[0]["name"].toString(),
                                                     it.documents[0]["name"].toString(),
                                                     currentLobbyUid
@@ -335,7 +348,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                             MaterialAlertDialogBuilder(requireContext())
                                 .setTitle("Add friends to lobby?")
                                 .setNeutralButton("Cancel") { _, _ -> }
-                                .setPositiveButton("Invite") { _, _ ->
+                                .setPositiveButton("Add") { _, _ ->
                                     invitePlayers(list2)
                                 }
                                 .setMultiChoiceItems(
@@ -380,6 +393,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                             db.collection("oldLobbies").document(it.documents[0].id).get().addOnSuccessListener {res->
                                 ownerResponded(res)
                             }
+                            increaseNumberOfGamesPlayedForPlayers(doc["players"] as ArrayList<String>)
                         }
                         CoroutineScope(Dispatchers.Default).launch {
                             for(playerUid in it.documents[0]["players"] as ArrayList<String>){
@@ -391,8 +405,8 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                                         if(player.documents[0]["tokens"] != null){
                                             tokens.addAll(player.documents[0]["tokens"] as ArrayList<String>)
                                         }
-                                        MyFirebaseMessagingService().sendNotificationToPlayersOnLobbyDone(tokens,
-                                            it.documents[0]["name"].toString(), it.documents[0]["uid"].toString())
+                                        MyFirebaseMessagingService().sendNotificationToPlayersOnLobbyDone(arrayListOf(playerUid),
+                                            tokens, it.documents[0]["name"].toString(), it.documents[0]["uid"].toString())
                                 }
                             }
                         }
@@ -400,6 +414,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     .show()
             }else{
                 ownerResponded(doc)
+            }
+        }
+    }
+
+    private fun increaseNumberOfGamesPlayedForPlayers(playerUids: java.util.ArrayList<String>) {
+        for(playerUid in playerUids){
+            db.collection("users").whereEqualTo("uid", playerUid).get().addOnSuccessListener {
+                it.documents[0].reference.update("numberOfGamesPlayed", it.documents[0]["numberOfGamesPlayed"].toString().toInt() + 1)
             }
         }
     }
@@ -420,36 +442,40 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                         .add(android.R.id.content, RatePlayersDialogFragment(doc["uid"].toString()))
                         .addToBackStack("RatePlayers")
                         .commit()
-                    //RatePlayersDialogFragment(doc["uid"].toString()).show(requireActivity().supportFragmentManager, "Dialog")
+
                 }
                 .show()
             val responded = ArrayList<String>()
             if(doc["playersResponded"] != null){
                 responded.addAll(doc["playersResponded"] as ArrayList<String>)
             }
-            //responded.add(auth.currentUser!!.uid) TODO
+            //responded.add(auth.currentUser!!.uid) TODO uncomment this
             doc.reference.update("playersResponded", responded)
         }
     }
 
     private fun invitePlayers(listOfPlayers: ArrayList<String>) {
+        Log.d(TAG, listOfPlayers.toString())
         db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
             val players = ArrayList<String>()
             if(it.documents[0]["players"] != null)
                 players.addAll(it.documents[0]["players"] as ArrayList<String>)
             for (playerUid in listOfPlayers) {
+                Log.d(TAG, playerUid)
                 if (!players.contains(playerUid)) {
-                    addPlayerToLobby(playerUid)
+                    Log.d(TAG, playerUid)
+                    addPlayerToLobby(playerUid, players)
                 }
             }
         }
     }
 
-    private fun addPlayerToLobby(playerUid: String) {
+    private fun addPlayerToLobby(playerUid: String, players: ArrayList<String>) {
+        Log.d(TAG, "1")
         db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {lobby->
-            val players = ArrayList<String>()
-            if(lobby.documents[0]["players"] != null)
+            if(players.size == 0){
                 players.addAll(lobby.documents[0]["players"] as ArrayList<String>)
+            }
             players.add(playerUid)
             var npil = numberOfPlayersInLobbyTxt.text.toString().toInt()
             npil += 1
@@ -508,10 +534,12 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
 
     private fun loadMessagesIntoDataAdapter(){
         db.collection("chat").whereEqualTo("lobbyUid", currentLobbyUid).addSnapshotListener { value, _ ->
-            val mes = value!!.documents[0]["messages"] as ArrayList<HashMap<String, String>>
+            if(value == null) return@addSnapshotListener
+            val mes = value.documents[0]["messages"] as ArrayList<HashMap<String, String>>
             val messages = ArrayList<Message>()
             for(message in mes){
-                messages.add(Message(message["senderUid"].toString(),message["senderName"].toString(), message["message"].toString()))
+                messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString(),
+                    message["time"].toString()))
             }
             if(adapterMessages.itemCount == 0){
                 adapterMessages.setData(messages)
@@ -536,14 +564,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
     private fun setupMessagesRecyclerView(){
         adapterMessages = MessagesDataAdapter(ArrayList(), requireContext())
         chatRV.adapter = adapterMessages
-        chatRV.layoutManager = LinearLayoutManager(requireContext())
+        chatRV.layoutManager = LinearLayoutManager(context)
         chatRV.setHasFixedSize(true)
     }
 
     private fun setupPlayersRecyclerView(){
         adapterPlayers = PlayersDataAdapter(ArrayList(), this, lobbyData["creatorUid"].toString(), lobbyData["uid"].toString())
         playersInLobbyRV.adapter = adapterPlayers
-        playersInLobbyRV.layoutManager = LinearLayoutManager(requireContext())
+        playersInLobbyRV.layoutManager = LinearLayoutManager(context)
         playersInLobbyRV.setHasFixedSize(true)
     }
 
@@ -569,14 +597,14 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
         db.collection("lobbies").whereEqualTo("uid", currentLobbyUid).get().addOnSuccessListener {
             removePlayerFromRequestsByUid(it, uid)
             adapterPlayers.removePlayerByUid(uid)
-            addPlayerToLobby(uid)
+            addPlayerToLobby(uid, ArrayList())
             val tokens = ArrayList<String>()
             db.collection("users").whereEqualTo("uid", uid).get().addOnSuccessListener { he->
                 if(he.documents[0]["tokens"] != null){
                     tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
                 }
                 db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {me->
-                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestAccepted(tokens,
+                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestAccepted(arrayListOf(uid), tokens,
                         me.documents[0]["name"].toString(), it.documents[0]["name"].toString(), currentLobbyUid)
                 }
 
@@ -593,7 +621,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
                     tokens.addAll(he.documents[0]["tokens"] as ArrayList<String>)
                 }
                 db.collection("users").whereEqualTo("uid", auth.currentUser!!.uid).get().addOnSuccessListener {me->
-                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestDenied(tokens,
+                    MyFirebaseMessagingService().sendNotificationToPlayerOnJoinRequestDenied(arrayListOf(uid), tokens,
                         me.documents[0]["name"].toString(), it.documents[0]["name"].toString())
                 }
             }

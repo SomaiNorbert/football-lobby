@@ -136,4 +136,9 @@
             app:destination="@id/privateChatFragment" />
     </fragment>
     <action android:id="@+id/action_global_findPlayersFragment" app:destination="@id/findPlayersFragment" />
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.football_lobby.fragments.NotificationsFragment"
+        android:label="fragment_notifications"
+        tools:layout="@layout/fragment_notifications" /><action android:id="@+id/action_global_notificationsFragment" app:destination="@id/notificationsFragment"/>
 </navigation>

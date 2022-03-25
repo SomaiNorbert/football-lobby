@@ -1,4 +1,4 @@
-package com.example.football_lobby
+package com.example.football_lobby.retrofit
 
 class Constants {
     companion object{

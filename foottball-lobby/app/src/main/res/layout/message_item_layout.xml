@@ -40,4 +40,12 @@
         app:layout_constraintEnd_toStartOf="@+id/messageTextView"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        app:layout_constraintStart_toEndOf="@+id/senderTextView"
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,7 +16,7 @@
             android:id="@+id/from"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="5dp"
             android:text="From:"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,23 +33,15 @@
             app:layout_constraintTop_toTopOf="@+id/from" />
 
         <TextView
-            android:id="@+id/personapComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="Comment:"
-            app:layout_constraintStart_toStartOf="@+id/punctuality"
-            app:layout_constraintTop_toBottomOf="@+id/punctuality" />
-
-        <TextView
             android:id="@+id/punctuality"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="70dp"
             android:layout_marginTop="5dp"
             android:text="Punctuality:"
             app:layout_constraintEnd_toStartOf="@+id/punctualityTxt"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="@+id/from"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/from" />
 
         <TextView
@@ -68,7 +60,7 @@
             android:id="@+id/behavior"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="70dp"
             android:text="Behavior:"
             app:layout_constraintBottom_toBottomOf="@+id/punctualityTxt"
             app:layout_constraintEnd_toStartOf="@+id/behaviorTxt"
@@ -83,8 +75,6 @@
             android:layout_marginStart="3dp"
             android:text="5"
             app:layout_constraintBottom_toBottomOf="@+id/behavior"
-            app:layout_constraintEnd_toStartOf="@+id/calmness"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/behavior"
             app:layout_constraintTop_toTopOf="@+id/behavior" />
 
@@ -92,13 +82,11 @@
             android:id="@+id/calmness"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
             android:text="Calmness:"
-            app:layout_constraintBottom_toBottomOf="@+id/behaviorTxt"
             app:layout_constraintEnd_toStartOf="@+id/calmnessTxt"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/behaviorTxt"
-            app:layout_constraintTop_toTopOf="@+id/behaviorTxt" />
+            app:layout_constraintStart_toStartOf="@+id/punctuality"
+            app:layout_constraintTop_toBottomOf="@+id/punctuality" />
 
         <TextView
             android:id="@+id/calmnessTxt"
@@ -116,7 +104,7 @@
             android:id="@+id/sportsmanship"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="70dp"
             android:text="Sportsmanship:"
             app:layout_constraintBottom_toBottomOf="@+id/calmnessTxt"
             app:layout_constraintEnd_toStartOf="@+id/sportsmanshipTxt"
@@ -129,11 +117,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="3dp"
-            android:layout_marginEnd="5dp"
             android:text="5"
             app:layout_constraintBottom_toBottomOf="@+id/sportsmanship"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/sportsmanship"
             app:layout_constraintTop_toTopOf="@+id/sportsmanship" />
 
@@ -148,8 +133,8 @@
             android:text="comment"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/personapComment"
-            app:layout_constraintTop_toBottomOf="@+id/personapComment"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/calmness"
             tools:ignore="TouchTargetSizeCheck" />
 
         <TextView
@@ -176,6 +161,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="visible"
-            app:constraint_referenced_ids="personapComment,commentTxt" />
+            app:constraint_referenced_ids="commentTxt" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

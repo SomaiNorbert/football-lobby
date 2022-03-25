@@ -17,11 +17,16 @@ import com.example.football_lobby.R
 import com.example.football_lobby.retrofit.RetrofitInstance
 import com.example.football_lobby.models.NotificationData
 import com.example.football_lobby.models.PushNotification
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.random.Random
 
 private const val CHANNEL_ID = "my_channel"
@@ -45,6 +50,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val bundle = Bundle()
         bundle.putString("uid", remoteMessage.data["uid"])
+        bundle.putString("notificationID", remoteMessage.data["id"])
 
         Log.d(TAG, remoteMessage.data["destination"].toString())
         Log.d(TAG, R.id.privateChatFragment.toString())
@@ -91,125 +97,155 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         return context.getSharedPreferences("_", MODE_PRIVATE).getString("token", "");
     }
 
-    private fun sendNotification(notification: PushNotification) =
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                val response = RetrofitInstance.api.postNotification(notification)
-                if (response.isSuccessful) {
-                    Log.d(TAG, "Response: $response")//Gson().toJson(response)}")
-                } else {
-                    Log.e(TAG, response.errorBody().toString())
+    private fun sendNotification(notification: PushNotification, toUid: ArrayList<String>) {
+        for(uid in toUid){
+            Firebase.firestore.collection("users").whereEqualTo("uid", uid).get().addOnSuccessListener {
+                val notifications = ArrayList<HashMap<String, String>>()
+                if(it.documents[0]["notifications"] != null){
+                    notifications.addAll(it.documents[0]["notifications"] as ArrayList<HashMap<String, String>>)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, e.toString())
-            }
-        }
-
-    fun sendNotificationToOwnerOnLobbyDone(ownerTokens: ArrayList<String>, gameName: String, lobbyUid: String) {
-        for(token in ownerTokens){
-            PushNotification(
-                NotificationData("Did the game happen?", "We noticed that, your game, $gameName is over. How was it?",
-                    "lobbyDetails", lobbyUid),
-                token
-            ).also{
-                sendNotification(it)
+                val not = hashMapOf(
+                    "title" to notification.data.title,
+                    "message" to notification.data.message,
+                    "destination" to notification.data.destination,
+                    "uid" to notification.data.uid,
+                    "id" to notification.data.id
+                )
+                var add = true
+                var id = ""
+                for(n in notifications){
+                    if(n["title"] == notification.data.title && n["message"] == notification.data.message &&
+                            n["destination"] == notification.data.destination && n["uid"] == notification.data.uid){
+                        add = false
+                        id = n["id"].toString()
+                    }
+                }
+                if(add){
+                    notifications.add(not)
+                    it.documents[0].reference.update("notifications", notifications)
+                    notification.data.id = id
+                }
+                CoroutineScope(Dispatchers.Default).launch {
+                    try {
+                        val response = RetrofitInstance.api.postNotification(notification)
+                        if (response.isSuccessful) {
+                            Log.d(TAG, "Response: $response")//Gson().toJson(response)}")
+                        } else {
+                            Log.e(TAG, response.errorBody().toString())
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, e.toString())
+                    }
+                }
             }
         }
     }
 
-    fun sendNotificationToPlayersOnLobbyDone(playersTokens: ArrayList<String>, gameName: String, lobbyUid: String) {
+    fun sendNotificationToOwnerOnLobbyDone(toUid: ArrayList<String>, ownerTokens: ArrayList<String>, gameName: String, lobbyUid: String) {
+        for(token in ownerTokens){
+            PushNotification(
+                NotificationData("Did the game happen?", "We noticed that, your game, $gameName is over. How was it?",
+                    "lobbyDetails", lobbyUid, UUID.randomUUID().toString()),
+                token
+            ).also{
+                sendNotification(it, toUid)
+            }
+        }
+    }
+
+    fun sendNotificationToPlayersOnLobbyDone(toUid: ArrayList<String>, playersTokens: ArrayList<String>, gameName: String, lobbyUid: String) {
         for(token in playersTokens){
             PushNotification(
                 NotificationData("How was your game? Rate players",
                     "We noticed that, your game, $gameName ended. Come and rate the players!",
-                "lobbyDetails", lobbyUid),
+                "lobbyDetails", lobbyUid, UUID.randomUUID().toString()),
                 token
             ).also {
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToPlayerOnMessageReceived(playerTokens: ArrayList<String>, fromName: String, fromUid: String) {
+    fun sendNotificationToPlayerOnMessageReceived(toUid: ArrayList<String>, playerTokens: ArrayList<String>, fromName: String, fromUid: String) {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("New Message", "You have a new message from $fromName!",
-                    "privateChat", fromUid),
+                    "privateChat", fromUid, UUID.randomUUID().toString()),
                 token
             ).also{
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToPlayerOnFriendRequest(playerTokens: ArrayList<String>, fromName: String) {
+    fun sendNotificationToPlayerOnFriendRequest(toUid: ArrayList<String>, playerTokens: ArrayList<String>, fromName: String) {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("New Friend Request", "You have a new pending friend request from $fromName",
-                    "myFriends"),
+                    "myFriends", id = UUID.randomUUID().toString()),
                 token
             ).also{
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToPlayerOnFriendRequestAccepted(playerTokens: ArrayList<String>, fromName: String) {
+    fun sendNotificationToPlayerOnFriendRequestAccepted(toUid: ArrayList<String>, playerTokens: ArrayList<String>, fromName: String) {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Friend Request Accepted", "$fromName accepted your friend request!",
-                    "myFriends"),
+                    "myFriends", id = UUID.randomUUID().toString()),
                 token
             ).also {
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToPlayerOnFriendRequestDenied(playerTokens: ArrayList<String>, fromName: String) {
+    fun sendNotificationToPlayerOnFriendRequestDenied(toUid: ArrayList<String>, playerTokens: ArrayList<String>, fromName: String) {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Friend Request Denied", "$fromName denied your friend request!",
-                    "findPlayers"),
+                    "findPlayers", id = UUID.randomUUID().toString()),
                 token
             ).also{
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToOwnerOnJoinRequest(ownerTokens: ArrayList<String>, fromName: String, lobbyName: String, lobbyUid: String) {
+    fun sendNotificationToOwnerOnJoinRequest(toUid: ArrayList<String>, ownerTokens: ArrayList<String>, fromName: String, lobbyName: String, lobbyUid: String) {
         for(token in ownerTokens){
             PushNotification(
                 NotificationData("New Join Lobby Request", "$fromName wants to join your lobby: $lobbyName",
-                    "lobbyDetails", lobbyUid),
+                    "lobbyDetails", lobbyUid, UUID.randomUUID().toString()),
                 token
             ).also {
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToPlayerOnJoinRequestAccepted(playerTokens: ArrayList<String>, fromName: String, lobbyName: String, lobbyUid: String) {
+    fun sendNotificationToPlayerOnJoinRequestAccepted(toUid: ArrayList<String>, playerTokens: ArrayList<String>, fromName: String, lobbyName: String, lobbyUid: String) {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Join Request Accepted", "$fromName accepted your request to join the lobby: $lobbyName",
-                    "lobbyDetails", lobbyUid),
+                    "lobbyDetails", lobbyUid, UUID.randomUUID().toString()),
                 token
             ).also {
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }
 
-    fun sendNotificationToPlayerOnJoinRequestDenied(playerTokens: ArrayList<String>, fromName: String, lobbyName: String) {
+    fun sendNotificationToPlayerOnJoinRequestDenied(toUid: ArrayList<String>, playerTokens: ArrayList<String>, fromName: String, lobbyName: String) {
         for(token in playerTokens){
             PushNotification(
                 NotificationData("Join Request Denied", "$fromName denied your request to join the lobby: $lobbyName",
-                    "findLobbies"),
+                    "findLobbies", id = UUID.randomUUID().toString()),
                 token
             ).also {
-                sendNotification(it)
+                sendNotification(it, toUid)
             }
         }
     }

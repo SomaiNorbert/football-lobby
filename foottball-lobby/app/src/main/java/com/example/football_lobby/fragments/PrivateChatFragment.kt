@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -19,6 +20,7 @@ import com.example.football_lobby.adapters.MessagesDataAdapter
 import com.example.football_lobby.models.Message
 import com.example.football_lobby.models.Player
 import com.example.football_lobby.services.MyFirebaseMessagingService
+import com.example.football_lobby.services.Services
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -32,6 +34,9 @@ import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class PrivateChatFragment : Fragment() {
 
@@ -71,6 +76,11 @@ class PrivateChatFragment : Fragment() {
 
         toUid = arguments?.get("uid").toString()
 
+        val notId = arguments?.get("notificationID").toString()
+        if(notId.isNotEmpty() && notId != "null"){
+            Services.removeNotificationFromPlayer(user.uid, notId)
+        }
+
         profileImgPrivate = view.findViewById(R.id.profileImgPrivate)
         toNameTxt = view.findViewById(R.id.nameTxt)
         privateChatRV = view.findViewById(R.id.privateChatRV)
@@ -83,7 +93,10 @@ class PrivateChatFragment : Fragment() {
             toNameTxt.text = toUser.documents[0]["name"].toString()
             val storageRef = Firebase.storage.reference
             storageRef.child("images/${toUid}").downloadUrl.addOnSuccessListener {
-                Glide.with(this).load(it).into(profileImgPrivate)
+                try {
+                    Glide.with(this).load(it).into(profileImgPrivate)
+                } catch (e: Exception) {
+                }
             }
             toPlayerTokens = toUser.documents[0]["tokens"] as ArrayList<String>
 
@@ -95,10 +108,15 @@ class PrivateChatFragment : Fragment() {
             if(messagePEDT.text.isNotEmpty())
             db.collection("users").whereEqualTo("uid", user.uid).get()
                 .addOnSuccessListener { resMe ->
+                    val calendar = Calendar.getInstance()
+                    val min = if(calendar.get(Calendar.MINUTE).toString().length == 1){"0" + calendar.get(Calendar.MINUTE)}else{calendar.get(Calendar.MINUTE)}
                     val mes = Message(
                         user.uid,
                         resMe.documents[0]["name"].toString(),
-                        messagePEDT.text.toString()
+                        messagePEDT.text.toString(),
+                        "" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + (calendar.get(Calendar.MONTH)+1) +
+                                "/" + calendar.get(Calendar.YEAR) + " " + calendar.get(Calendar.HOUR_OF_DAY) + ":" +
+                                min
                     )
                     val fromName = resMe.documents[0]["name"].toString()
                     val fromUid = resMe.documents[0]["uid"].toString()
@@ -113,11 +131,19 @@ class PrivateChatFragment : Fragment() {
                             messages.add(mes)
                             db.collection("privateChat").document(doc!!.id)
                                 .update("messages", messages.toList())
-                            MyFirebaseMessagingService().sendNotificationToPlayerOnMessageReceived(toPlayerTokens, fromName, fromUid)
+                            MyFirebaseMessagingService().sendNotificationToPlayerOnMessageReceived(arrayListOf(toUid), toPlayerTokens, fromName, fromUid)
                         }
                     }
                 }
         }
+
+        val onClickListener = View.OnClickListener() {
+            val bundle = Bundle()
+            bundle.putString("playerUid", toUid)
+            findNavController().navigate(R.id.action_global_profileFragment, bundle)
+        }
+        toNameTxt.setOnClickListener(onClickListener)
+        profileImgPrivate.setOnClickListener(onClickListener)
     }
 
     private fun getDoc():DocumentSnapshot? {
@@ -160,7 +186,8 @@ class PrivateChatFragment : Fragment() {
             doc!!.reference.addSnapshotListener { value, _ ->
                 val messages = ArrayList<Message>()
                 for (message in value!!["messages"] as ArrayList<HashMap<String, String>>) {
-                    messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString()))
+                    messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString(),
+                                            message["time"].toString()))
                 }
                 if(adapterMessages.itemCount == 0){
                     CoroutineScope(Dispatchers.Main).launch {
