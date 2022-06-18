@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -85,6 +86,9 @@ class FindLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener
     private fun filter() {
         adapterLobbies.filter.filter(findLobbyByName.text.toString() + "/" +
                 findLobbyByCreator.text.toString() + "/" + distanceSlider.value.toInt().toString())
+        if(adapterLobbies.itemCount == 0){
+            Toast.makeText(context, "No lobbies found with the given filters!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun loadAllLobbiesIntoAdapter() {

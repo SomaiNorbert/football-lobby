@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -161,6 +162,8 @@ class FindPlayersFragment : Fragment(), PlayersDataAdapter.OnItemClickedListener
                             checkedItem = which
                         }
                         .show()
+                } else {
+                    Toast.makeText(context, "${clicked.documents[0]["name"]} can not be invited to either of your lobbies!", Toast.LENGTH_SHORT).show()
                 }
             }
         }

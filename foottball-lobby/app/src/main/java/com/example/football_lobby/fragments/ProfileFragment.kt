@@ -220,9 +220,9 @@ class ProfileFragment : Fragment() {
     }
 
     fun deleteUser(){
-        user!!.delete();
-        //DELETE from DBs TODO
-        navigateToStartScreen()
+        //user!!.delete();
+        //DELETE from DBs
+        //navigateToStartScreen()
     }
 
     private fun navigateToStartScreen(){

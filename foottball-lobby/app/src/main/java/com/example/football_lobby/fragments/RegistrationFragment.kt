@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.football_lobby.R
+import com.example.football_lobby.services.MyFirebaseMessagingService
 import com.google.android.gms.tasks.Tasks
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.EmailAuthProvider
@@ -164,6 +165,7 @@ class RegistrationFragment : Fragment() {
                     auth.createUserWithEmailAndPassword(email.text.toString(), password.text.toString())
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
+                                val myToken = MyFirebaseMessagingService().getToken(requireContext())
                                 val user = hashMapOf(
                                     "name" to name.text.toString(),
                                     "name_lower" to name.text.toString().lowercase(),
@@ -173,7 +175,8 @@ class RegistrationFragment : Fragment() {
                                     "numberOfGamesPlayed" to 0,
                                     "overallRating" to 0,
                                     "uid" to auth.uid,
-                                    "friends" to emptyList<String>()
+                                    "friends" to emptyList<String>(),
+                                    "tokens" to arrayListOf(myToken)
                                 )
                                 auth.currentUser!!.sendEmailVerification()
                                     .addOnCompleteListener { task2 ->

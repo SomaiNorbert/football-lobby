@@ -49,11 +49,12 @@ class MyLobbiesFragment : Fragment(), LobbiesDataAdapter.OnItemClickedListener {
         val list = ArrayList<Lobby>()
         db.collection("oldLobbies").get().addOnSuccessListener {
             for(lobby in it.documents){
-                if ((lobby["creatorUid"].toString() == Firebase.auth.currentUser!!.uid ||
+                if (((lobby["players"] as ArrayList<String>).contains(Firebase.auth.currentUser!!.uid))
+                    && ((lobby["creatorUid"].toString() == Firebase.auth.currentUser!!.uid ||
                             !(lobby["isOnGoing"] as Boolean) ||
                             ((lobby["isOnGoing"] as Boolean) && (lobby["ownerResponded"] != null)))
                     && (lobby["playersResponded"] == null || !(lobby["playersResponded"] as ArrayList<String>)
-                        .contains(Firebase.auth.currentUser!!.uid))) {
+                        .contains(Firebase.auth.currentUser!!.uid)))) {
                     list.add(
                         Lobby(
                             lobby["uid"].toString(),

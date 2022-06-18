@@ -56,10 +56,6 @@ class ForgotPasswordFragment : Fragment() {
                 }
             }
         }
-
-        view.findViewById<Button>(R.id.backToLogInBtn).setOnClickListener {
-            findNavController().navigate(R.id.action_forgotPasswordFragment_to_loginFragment)
-        }
     }
 
 }

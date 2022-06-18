@@ -449,7 +449,7 @@ class LobbyDetailsFragment : Fragment(), PlayersDataAdapter.OnItemClickedListene
             if(doc["playersResponded"] != null){
                 responded.addAll(doc["playersResponded"] as ArrayList<String>)
             }
-            //responded.add(auth.currentUser!!.uid) TODO uncomment this
+            responded.add(auth.currentUser!!.uid)
             doc.reference.update("playersResponded", responded)
         }
     }

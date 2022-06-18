@@ -185,7 +185,10 @@ class PrivateChatFragment : Fragment() {
         } else {
             doc!!.reference.addSnapshotListener { value, _ ->
                 val messages = ArrayList<Message>()
-                for (message in value!!["messages"] as ArrayList<HashMap<String, String>>) {
+                if(value == null){
+                    return@addSnapshotListener
+                }
+                for (message in value["messages"] as ArrayList<HashMap<String, String>>) {
                     messages.add(Message(message["senderUid"].toString(), message["senderName"].toString(), message["message"].toString(),
                                             message["time"].toString()))
                 }
